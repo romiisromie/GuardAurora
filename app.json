@@ -1,0 +1,56 @@
+{
+  "expo": {
+    "name": "GuardAurora",
+    "slug": "guardaurora",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/logo.png",
+    "userInterfaceStyle": "dark",
+    "newArchEnabled": true,
+    "splash": {
+      "image": "./assets/logo.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#0d0118"
+    },
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.guardaurora.app",
+      "infoPlist": {
+        "NSMicrophoneUsageDescription": "GuardAurora использует микрофон для обнаружения угроз.",
+        "NSLocationWhenInUseUsageDescription": "GuardAurora использует геолокацию для передачи вашего местоположения.",
+        "NSLocationAlwaysAndWhenInUseUsageDescription": "GuardAurora использует фоновую геолокацию для вашей защиты."
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/logo.png",
+        "backgroundColor": "#0d0118"
+      },
+      "package": "com.guardaurora.app",
+      "permissions": [
+        "android.permission.RECORD_AUDIO",
+        "android.permission.ACCESS_FINE_LOCATION",
+        "android.permission.ACCESS_COARSE_LOCATION",
+        "android.permission.VIBRATE"
+      ]
+    },
+    "web": {
+      "favicon": "./assets/logo.png"
+    },
+    "plugins": [
+      [
+        "expo-av",
+        {
+          "microphonePermission": "Разрешить GuardAurora использовать микрофон."
+        }
+      ],
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "Разрешить GuardAurora использовать геолокацию."
+        }
+      ],
+      "expo-font"
+    ]
+  }
+}
