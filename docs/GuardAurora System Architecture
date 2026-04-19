@@ -1,0 +1,92 @@
+GuardAurora System Architecture
+📌 Overview
+
+GuardAurora uses a hybrid AI architecture (on-device + cloud) to enable real-time threat detection, emergency response, and safe navigation while preserving user privacy and minimizing latency.
+
+🧭 High-Level System Flow
+  <img width="2512" height="1697" alt="mermaid-diagram" src="https://github.com/user-attachments/assets/87396482-b09e-4d91-a577-d49907b07eb1" />
+
+  📱 Client-Side Architecture (On-Device)
+🎧 Input Layer
+Microphone audio stream
+GPS location sensor
+🧠 AI Processing Layer
+Lightweight ML model (on-device inference)
+Detects:
+aggression patterns
+distress voices
+abnormal sound events
+⚡ Decision Layer
+Determines:
+safe state
+suspicious activity
+critical threat
+
+👉 Runs without internet dependency
+
+🚨 Event Handling System
+
+When a threat is detected:
+
+System generates event trigger
+Local actions execute immediately:
+start recording
+activate silent mode alerts
+Event is sent to backend
+☁️ Backend Architecture
+📡 API Gateway
+Secure entry point for all requests
+Handles authentication & routing
+🔔 Notification Service
+Sends:
+push notifications
+SMS fallback
+Targets trusted contacts instantly
+📍 Real-Time Location Service
+Streams live GPS updates
+Enables tracking link sharing
+🗄️ Data Storage
+Stores:
+user settings
+emergency logs
+optional recordings
+🧠 AI Intelligence Layer (Cloud)
+Model updates & improvements
+Risk scoring system for locations (future)
+Continuous optimization of detection accuracy
+🧭 Safe Routing Engine
+
+Uses:
+
+Maps APIs
+Risk analysis system
+
+Outputs:
+
+safest possible route
+low-risk navigation paths
+🔐 Security & Privacy Layer
+End-to-end encryption
+Minimal data collection
+On-device processing priority
+User-controlled permissions
+⚡ Key Design Principles
+1. Low Latency First
+
+Critical decisions happen on-device (< 1 second response time)
+
+2. Privacy by Design
+
+Audio is processed locally, not streamed to cloud
+
+3. Hybrid Architecture
+Device = detection + reaction
+Cloud = coordination + storage
+4. Fail-Safe Operation
+Works with weak or no internet
+SMS fallback for emergencies
+🔮 Future Enhancements
+Federated learning (privacy-preserving AI training)
+Wearable integration (smartwatch panic mode)
+Community-based safety heatmaps
+Advanced risk prediction system
