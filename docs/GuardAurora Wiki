@@ -1,0 +1,70 @@
+# 🛡️ Welcome to the GuardAurora Wiki
+
+GuardAurora is an AI-powered safety application designed to protect girls and children in real-life situations by detecting threats and responding automatically.
+
+This wiki provides additional information about the project, including its architecture, features, and development roadmap.
+
+---
+
+## 📌 Project Overview
+
+GuardAurora focuses on **preventive safety**, using artificial intelligence to detect potential danger without requiring manual interaction from the user.
+
+The system analyzes environmental audio, detects abnormal or threatening patterns, and activates emergency protocols such as recording, alerting trusted contacts, and sharing real-time location.
+
+---
+
+## 🚀 Core Features
+
+* AI-based sound and voice analysis
+* Automatic emergency response
+* Real-time GPS tracking
+* Chatbot and voice assistant
+* Safe route suggestions (“Where are you?” feature)
+
+---
+
+## 🧭 Roadmap
+
+### Phase 1 — Concept & Design
+
+* Define core functionality
+* Design user experience
+* Research AI models
+
+### Phase 2 — Prototype
+
+* Implement basic features
+* Test threat detection logic
+* Build UI/UX
+
+### Phase 3 — MVP
+
+* Improve AI accuracy
+* Add real-time notifications
+* Optimize performance
+
+### Phase 4 — Future Development
+
+* Integration with emergency services
+* Advanced AI models
+* Community safety features
+
+---
+
+## 📊 Current Status
+
+🟡 Early-stage development / prototype
+
+---
+
+## 🤝 Contributing
+
+Contributions, ideas, and feedback are welcome.
+Feel free to open issues or suggest improvements.
+
+---
+
+## 📄 License
+
+This project is licensed under the MIT License.
