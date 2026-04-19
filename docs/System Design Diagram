@@ -1,0 +1,53 @@
+🏗️ GuardAurora — System Design Diagram
+The system is designed with a hybrid architecture where critical threat detection happens on-device for low latency, while cloud services handle communication, storage, and scalability.
+                    ┌──────────────────────────────┐
+                    │        Mobile Client         │
+                    │        (iOS / Android)       │
+                    └─────────────┬────────────────┘
+                                  │
+        ┌─────────────────────────┼─────────────────────────┐
+        │                         │                         │
+        ▼                         ▼                         ▼
+
+┌──────────────────┐   ┌────────────────────┐   ┌────────────────────┐
+│ Audio Processing │   │ Threat Detection   │   │  GPS / Location    │
+│  (On-device AI)  │   │   Engine (ML)      │   │     Module         │
+└────────┬─────────┘   └────────┬───────────┘   └────────┬───────────┘
+         │                      │                         │
+         └──────────────┬───────┴───────────────┬─────────┘
+                        ▼                       ▼
+
+               ┌──────────────────────┐   ┌──────────────────────┐
+               │ Emergency Trigger    │   │ AI Assistant         │
+               │ (Auto Actions)       │   │ (Chat + Voice)       │
+               └─────────┬────────────┘   └─────────┬────────────┘
+                         │                          │
+                         └──────────────┬───────────┘
+                                        ▼
+                              ┌──────────────────┐
+                              │   API Gateway    │
+                              └────────┬─────────┘
+                                       │
+        ┌──────────────────────────────┼──────────────────────────────┐
+        ▼                              ▼                              ▼
+
+┌──────────────────┐        ┌──────────────────┐        ┌──────────────────┐
+│ Notification     │        │ Real-Time        │        │   Data Storage   │
+│ Service          │        │ Location Service │        │ (DB + Storage)   │
+└────────┬─────────┘        └────────┬─────────┘        └────────┬─────────┘
+         │                           │                          │
+         ▼                           ▼                          ▼
+
+┌──────────────────┐        ┌──────────────────┐        ┌──────────────────┐
+│ Trusted Contacts │        │ Live Tracking UI │        │  Logs / Audio    │
+│ (Push / SMS)     │        │ (Web / App)      │        │  / User Data     │
+└──────────────────┘        └──────────────────┘        └──────────────────┘
+
+
+                    ┌──────────────────────────────┐
+                    │ External Services            │
+                    ├──────────────────────────────┤
+                    │ • Maps & Routing APIs        │
+                    │ • Emergency Services (future)│
+                    │ • AI Model Updates           │
+                    └──────────────────────────────┘
