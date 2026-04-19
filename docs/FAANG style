@@ -1,0 +1,20 @@
+Audio / GPS Input
+        ↓
+On-device AI (Threat Detection)
+        ↓
+Event Trigger Engine
+        ↓
+API Gateway
+        ↓
+Backend Services
+   ├─ Notifications
+   ├─ Location Streaming
+   ├─ Data Storage
+        ↓
+External Systems
+
+
+
+  FAANG diagrams are always interpreted as follows:
+
+Input → Processing → Decision → Action → Backend
