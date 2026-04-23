@@ -1,3 +1,4 @@
+<img width="1024" height="1024" alt="WhatsApp Image 2026-04-20 at 4 21 39 PM" src="https://github.com/user-attachments/assets/332ba011-47e4-496d-ac7b-2248d1c09963" />
 # 🛡️ GuardAurora — Запуск в VS Code
 
 ## Структура проекта
