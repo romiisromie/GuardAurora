@@ -46,7 +46,7 @@ Ctrl + `  (или Terminal → New Terminal)
 npm install
 ```
 
-### 4. Запусти Expo
+### 4. Запуcти Expo
 ```bash
 npx expo start
 ```
