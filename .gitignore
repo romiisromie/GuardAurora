@@ -6,3 +6,5 @@ build/
 *.log
 /public/emergency/
 .env
+.env.*
+!.env.example

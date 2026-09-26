@@ -3,7 +3,6 @@ import {
   View, Text, StyleSheet, ScrollView, TouchableOpacity, Linking,
   TextInput, Alert, Animated, Modal, KeyboardAvoidingView, Platform,
 } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useApp, TrustedContact } from '../store/AppContext';
@@ -18,7 +17,7 @@ const REL_COLORS: Record<string, string> = {
 };
 
 export default function ContactsScreen() {
-  const { trustedContacts, addContact, removeContact } = useApp();
+  const { trustedContacts, addContact, removeContact, threatHistory, sosActive } = useApp();
   const [modalOpen, setModalOpen] = useState(false);
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
@@ -40,13 +39,33 @@ export default function ContactsScreen() {
       Alert.alert('Ошибка', 'Заполни имя и номер телефона');
       return;
     }
-    const digits = phone.replace(/\D/g, '');
-    if (digits.length < 7 || digits.length > 15) {
-      Alert.alert('Проверьте номер', 'Введите номер телефона, содержащий от 7 до 15 цифр.');
+    const normalizedPhone = phone.trim();
+    const digits = normalizedPhone.replace(/\D/g, '');
+    if (!/^\+?[\d\s().-]+$/.test(normalizedPhone) || digits.length < 7 || digits.length > 15 || name.trim().length > 80) {
+      Alert.alert('Проверьте данные', 'Укажите имя до 80 символов и номер телефона, содержащий от 7 до 15 цифр.');
       return;
     }
-    addContact({ id: Date.now().toString(), name: name.trim(), phone: phone.trim(), relation, avatar });
+    addContact({ id: Date.now().toString(), name: name.trim(), phone: normalizedPhone, relation, avatar });
     setModalOpen(false);
+  };
+
+  const textContact = async (contact: TrustedContact) => {
+    const lastSOS = threatHistory.find(event => event.type === 'manual' || event.type === 'shake');
+    const coordinates = sosActive ? lastSOS?.location : undefined;
+    const locationAge = coordinates ? Date.now() - coordinates.timestamp : Number.POSITIVE_INFINITY;
+    const freshCoordinates = coordinates && locationAge >= 0 && locationAge <= 5 * 60 * 1000
+      ? coordinates
+      : undefined;
+    const message = sosActive
+      ? `SOS GuardAurora: мне нужна помощь.${freshCoordinates ? ` Последнее местоположение (${Math.round(freshCoordinates.accuracy)} м): https://maps.google.com/?q=${freshCoordinates.latitude},${freshCoordinates.longitude}` : ''}`
+      : 'Мне нужна помощь. Пожалуйста, свяжись со мной.';
+    const body = encodeURIComponent(message);
+    const separator = Platform.OS === 'ios' ? '&' : '?';
+    try {
+      await Linking.openURL(`sms:${contact.phone}${separator}body=${body}`);
+    } catch {
+      Alert.alert('Сообщения недоступны', 'Не удалось открыть приложение для SMS.');
+    }
   };
 
   const handleRemove = (c: TrustedContact) => {
@@ -57,7 +76,7 @@ export default function ContactsScreen() {
   };
 
   return (
-    <LinearGradient colors={['#0d0118', '#160d24']} style={{ flex: 1 }}>
+    <View style={{ flex: 1, backgroundColor: Colors.bg }}>
       <SafeAreaView style={{ flex: 1 }}>
         <Animated.View style={[{ flex: 1 }, { opacity: fadeAnim }]}>
 
@@ -82,8 +101,8 @@ export default function ContactsScreen() {
               </GlassCard>
               <GlassCard style={styles.topStatCard} accentColor={Colors.rose}>
                 <View style={styles.topStatInner}>
-                  <Text style={styles.topStatNum}>SOS</Text>
-                  <Text style={styles.topStatLabel}>push + location</Text>
+                  <Text style={styles.topStatNum}>Локально</Text>
+                  <Text style={styles.topStatLabel}>без автосообщений</Text>
                 </View>
               </GlassCard>
             </View>
@@ -130,7 +149,14 @@ export default function ContactsScreen() {
                         >
                           <Ionicons name="call" size={17} color={Colors.mint} />
                         </TouchableOpacity>
-                        <TouchableOpacity style={[styles.actionBtn, { backgroundColor: Colors.roseGlow }]} onPress={() => handleRemove(c)}>
+                        <TouchableOpacity
+                          style={[styles.actionBtn, { backgroundColor: Colors.lavenderGlow }]}
+                          accessibilityLabel={`Написать ${c.name}`}
+                          onPress={() => textContact(c)}
+                        >
+                          <Ionicons name="chatbubble-ellipses" size={17} color={Colors.lavender} />
+                        </TouchableOpacity>
+                        <TouchableOpacity accessibilityLabel={`Удалить ${c.name}`} style={[styles.actionBtn, { backgroundColor: Colors.roseGlow }]} onPress={() => handleRemove(c)}>
                           <Ionicons name="trash-outline" size={17} color={Colors.rose} />
                         </TouchableOpacity>
                       </View>
@@ -152,7 +178,7 @@ export default function ContactsScreen() {
       </SafeAreaView>
 
       {/* Add Modal */}
-      <Modal visible={modalOpen} animationType="slide" transparent>
+      <Modal visible={modalOpen} animationType="slide" transparent onRequestClose={() => setModalOpen(false)}>
         <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.modalWrap}>
           <View style={styles.sheet}>
             <View style={styles.handle} />
@@ -171,8 +197,8 @@ export default function ContactsScreen() {
               ))}
             </ScrollView>
 
-            <TextInput style={styles.input} placeholder="Имя" placeholderTextColor={Colors.textMuted} value={name} onChangeText={setName} />
-            <TextInput style={styles.input} placeholder="Номер телефона" placeholderTextColor={Colors.textMuted} value={phone} onChangeText={setPhone} keyboardType="phone-pad" />
+            <TextInput style={styles.input} placeholder="Имя" placeholderTextColor={Colors.textMuted} value={name} onChangeText={setName} maxLength={80} returnKeyType="next" />
+            <TextInput style={styles.input} placeholder="Номер телефона" placeholderTextColor={Colors.textMuted} value={phone} onChangeText={setPhone} keyboardType="phone-pad" maxLength={24} returnKeyType="done" />
 
             <Text style={styles.inputLabel}>Тип контакта</Text>
             <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: Spacing.lg }}>
@@ -196,7 +222,7 @@ export default function ContactsScreen() {
           </View>
         </KeyboardAvoidingView>
       </Modal>
-    </LinearGradient>
+    </View>
   );
 }
 
@@ -227,9 +253,9 @@ const styles = StyleSheet.create({
   relTag: { alignSelf: 'flex-start', borderRadius: Radius.full, paddingHorizontal: 10, paddingVertical: 3, marginTop: 5 },
   relText: { fontSize: 11, fontWeight: '600' },
   actionBtn: { width: 36, height: 36, borderRadius: 18, alignItems: 'center', justifyContent: 'center' },
-  modalWrap: { flex: 1, justifyContent: 'flex-end', backgroundColor: 'rgba(0,0,0,0.65)' },
+  modalWrap: { flex: 1, justifyContent: 'flex-end', backgroundColor: 'rgba(20,24,30,0.35)' },
   sheet: {
-    backgroundColor: '#160d24', borderTopLeftRadius: 28, borderTopRightRadius: 28,
+    backgroundColor: Colors.bgElevated, borderTopLeftRadius: Radius.lg, borderTopRightRadius: Radius.lg,
     padding: Spacing.lg, paddingBottom: 40, borderTopWidth: 1, borderColor: Colors.border,
   },
   handle: { width: 40, height: 4, backgroundColor: Colors.border, borderRadius: 999, alignSelf: 'center', marginBottom: Spacing.lg },

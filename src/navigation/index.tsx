@@ -10,14 +10,14 @@ import ContactsScreen from '../screens/ContactsScreen';
 import HistoryScreen from '../screens/HistoryScreen';
 import LegalScreen from '../screens/LegalScreen';
 import { useApp } from '../store/AppContext';
-import { Colors, Radius } from '../theme';
+import { Colors } from '../theme';
 
 const Tab = createBottomTabNavigator();
 
 const TABS = [
   { name: 'Home', icon: 'shield', label: 'Защита' },
   { name: 'Map', icon: 'map', label: 'Карта' },
-  { name: 'Chat', icon: 'chatbubble-ellipses', label: 'ИИ Чат' },
+  { name: 'Chat', icon: 'chatbubble-ellipses', label: 'Помощь' },
   { name: 'Contacts', icon: 'people', label: 'Контакты' },
   { name: 'History', icon: 'time', label: 'Журнал' },
   { name: 'Legal', icon: 'information-circle', label: 'Право' },
@@ -50,7 +50,7 @@ const linking = {
 };
 
 function CustomTabBar({ state, navigation }: any) {
-  const { sosActive, isMonitoring } = useApp();
+  const { sosActive } = useApp();
 
   return (
     <View style={styles.tabBarWrap}>
@@ -58,7 +58,6 @@ function CustomTabBar({ state, navigation }: any) {
         {state.routes.map((route: any, index: number) => {
           const isFocused = state.index === index;
           const tab = TABS[index];
-          const isHome = route.name === 'Home';
 
           const onPress = () => {
             const event = navigation.emit({
@@ -71,37 +70,13 @@ function CustomTabBar({ state, navigation }: any) {
             }
           };
 
-          if (isHome) {
-            const ringColor = sosActive
-              ? Colors.danger
-              : isMonitoring
-                ? Colors.lavender
-                : Colors.rose;
-            return (
-              <TouchableOpacity key={route.key} onPress={onPress} style={styles.tabItem} activeOpacity={0.7}>
-                <View style={[styles.homeBtnOuter, { shadowColor: ringColor }]}>
-                  <View style={[styles.homeBtn, { borderColor: ringColor, backgroundColor: `${ringColor}18` }]}>
-                  <Ionicons
-                    name={isFocused ? 'shield' : 'shield-outline'}
-                    size={22}
-                    color={ringColor}
-                  />
-                  </View>
-                </View>
-                <Text style={[styles.tabLabel, { color: isFocused ? ringColor : Colors.textMuted }]}>
-                  {tab.label}
-                </Text>
-              </TouchableOpacity>
-            );
-          }
-
           return (
-            <TouchableOpacity key={route.key} onPress={onPress} style={styles.tabItem} activeOpacity={0.7}>
-              <View style={[styles.tabIconWrap, isFocused && styles.tabIconActive]}>
+            <TouchableOpacity key={route.key} onPress={onPress} style={styles.tabItem} activeOpacity={0.7} accessibilityRole="tab" accessibilityState={{ selected: isFocused }} accessibilityLabel={tab.label}>
+              <View style={styles.tabIconWrap}>
                 <Ionicons
                   name={(isFocused ? tab.icon : `${tab.icon}-outline`) as any}
-                  size={21}
-                  color={isFocused ? Colors.lavender : Colors.textMuted}
+                  size={20}
+                  color={isFocused ? (sosActive && route.name === 'Home' ? Colors.danger : Colors.lavender) : Colors.textMuted}
                 />
               </View>
               <Text style={[styles.tabLabel, { color: isFocused ? Colors.lavender : Colors.textMuted }]}>
@@ -134,53 +109,28 @@ export default function Navigation() {
 }
 
 const styles = StyleSheet.create({
-  tabBarWrap: {
-    position: 'absolute',
-    bottom: 10,
-    left: 0,
-    right: 0,
-    paddingHorizontal: 14,
-  },
+  tabBarWrap: { position: 'absolute', bottom: 0, left: 0, right: 0 },
   tabBar: {
     flexDirection: 'row',
-    backgroundColor: Colors.backdrop,
-    borderWidth: 1,
+    backgroundColor: Colors.bgElevated,
+    borderTopWidth: 1,
     borderColor: Colors.border,
-    paddingTop: 10,
+    paddingTop: 8,
     paddingBottom: Platform.OS === 'ios' ? 24 : 12,
-    paddingHorizontal: 8,
-    borderRadius: 26,
+    paddingHorizontal: 2,
   },
   tabItem: {
     flex: 1,
     alignItems: 'center',
-    gap: 5,
+    gap: 2,
   },
   tabIconWrap: {
-    width: 42,
-    height: 34,
-    borderRadius: Radius.full,
+    height: 24,
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  tabIconActive: {
-    backgroundColor: Colors.lavenderGlow,
-  },
-  homeBtnOuter: {
-    shadowOpacity: 0.25,
-    shadowRadius: 10,
-    shadowOffset: { width: 0, height: 6 },
-  },
-  homeBtn: {
-    width: 52,
-    height: 40,
-    borderRadius: Radius.full,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1.5,
   },
   tabLabel: {
-    fontSize: 10,
+    fontSize: 9,
     fontWeight: '600',
     letterSpacing: 0.1,
   },

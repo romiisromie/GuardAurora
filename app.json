@@ -3,6 +3,7 @@
     "name": "GuardAurora",
     "slug": "guardaurora",
     "version": "1.0.0",
+    "description": "Офлайн-помощник для личной безопасности: локальная отметка SOS, доверенные контакты и координаты по запросу. SOS не вызывает службы и не отправляет сообщения автоматически.",
     "orientation": "portrait",
     "icon": "./assets/logo.png",
     "userInterfaceStyle": "dark",
@@ -17,7 +18,7 @@
       "bundleIdentifier": "com.guardaurora.app",
       "infoPlist": {
         "NSMicrophoneUsageDescription": "GuardAurora использует микрофон для локального измерения уровня звука при включённом мониторинге.",
-        "NSLocationWhenInUseUsageDescription": "GuardAurora использует геолокацию для отображения координат при запросе и во время мониторинга."
+        "NSLocationWhenInUseUsageDescription": "GuardAurora определяет координаты только по вашему запросу, чтобы показать их и открыть в картах."
       }
     },
     "android": {
