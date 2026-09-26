@@ -5,6 +5,10 @@ export type Language = 'kk' | 'ru' | 'en';
 const LANGUAGE_KEY = '@guardaurora/language';
 
 const en: Record<string, string> = {
+  'Оператор приложения: Рамина Ибраимова (Казахстан). По вопросам конфиденциальности и обработки данных: romiisromie@gmail.com.': 'App operator: Ramina Ibraimova (Kazakhstan). For privacy and data requests: romiisromie@gmail.com.',
+  '6. Возрастная аудитория': '6. Age group', '8. Обновления и контакты': '8. Updates and contact',
+  'Приложение предназначено для пользователей 13 лет и старше. Данные не передаются на сервер GuardAurora. Родителям и законным представителям следует учитывать локальное хранение контактов, координат и записей событий на устройстве.': 'GuardAurora is intended for users aged 13 and older. Data is not sent to a GuardAurora server. Parents and legal guardians should consider that contacts, coordinates, and activity entries are stored locally on the device.',
+  'Актуальная версия этой политики доступна по адресу https://guard-aurora.vercel.app/privacy. По вопросам о данных свяжитесь с оператором по адресу romiisromie@gmail.com.': 'The current policy is available at https://guard-aurora.vercel.app/privacy. For data questions, contact the operator at romiisromie@gmail.com.',
   'Защита': 'Safety', 'Карта': 'Map', 'Помощь': 'Help', 'Контакты': 'Contacts', 'Люди': 'People', 'Журнал': 'Activity', 'Право': 'Privacy',
   'Центр безопасности': 'Safety center', 'Готовность': 'Ready', 'Мониторинг включён': 'Monitoring on', 'Обнаружен риск': 'Loud sound', 'Экстренный режим': 'SOS active',
   'Можно включить локальный мониторинг, отметить SOS и позвонить контакту вручную.': 'Turn on on-device monitoring, record an SOS event, or call a trusted contact.',
@@ -69,6 +73,10 @@ const en: Record<string, string> = {
 };
 
 const kk: Record<string, string> = {
+  'Оператор приложения: Рамина Ибраимова (Казахстан). По вопросам конфиденциальности и обработки данных: romiisromie@gmail.com.': 'Қолданба операторы: Рамина Ибраимова (Қазақстан). Құпиялық және деректерді өңдеу сұрақтары бойынша: romiisromie@gmail.com.',
+  '6. Возрастная аудитория': '6. Жас тобы', '8. Обновления и контакты': '8. Жаңарту және байланыс',
+  'Приложение предназначено для пользователей 13 лет и старше. Данные не передаются на сервер GuardAurora. Родителям и законным представителям следует учитывать локальное хранение контактов, координат и записей событий на устройстве.': 'GuardAurora 13 жастан бастап пайдаланушыларға арналған. Деректер GuardAurora серверіне жіберілмейді. Ата-аналар мен заңды өкілдер контактілер, координаттар және оқиғалар жазбасы құрылғыда жергілікті сақталатынын ескеруі керек.',
+  'Актуальная версия этой политики доступна по адресу https://guard-aurora.vercel.app/privacy. По вопросам о данных свяжитесь с оператором по адресу romiisromie@gmail.com.': 'Саясаттың қазіргі нұсқасы https://guard-aurora.vercel.app/privacy мекенжайында қолжетімді. Деректер туралы сұрақтар бойынша операторға жазыңыз: romiisromie@gmail.com.',
   'Защита': 'Қорғау', 'Карта': 'Карта', 'Помощь': 'Көмек', 'Контакты': 'Байланыстар', 'Люди': 'Адамдар', 'Журнал': 'Журнал', 'Право': 'Құқық',
   'Центр безопасности': 'Қауіпсіздік орталығы', 'Готовность': 'Дайын', 'Мониторинг включён': 'Бақылау қосулы', 'Обнаружен риск': 'Қатты дыбыс', 'Экстренный режим': 'SOS белсенді',
   'Можно включить локальный мониторинг, отметить SOS и позвонить контакту вручную.': 'Құрылғыдағы бақылауды қосып, SOS оқиғасын белгілеп немесе сенімді адамға қоңырау шалыңыз.',
