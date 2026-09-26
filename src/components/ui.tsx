@@ -5,6 +5,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors, Radius, Spacing } from '../theme';
+import { useLanguage } from '../i18n';
 
 export function GlassCard({ children, style, onPress }: {
   children: React.ReactNode; style?: StyleProp<ViewStyle>; accentColor?: string; onPress?: () => void;
@@ -63,12 +64,13 @@ export function StatusBadge({ label, color }: { label: string; color: string }) 
 }
 
 export function ThreatMeter({ score }: { score: number }) {
+  const { t } = useLanguage();
   const width = `${Math.max(0, Math.min(100, score))}%` as `${number}%`;
   const color = score > 70 ? Colors.warning : Colors.lavender;
   return <View style={{ gap: 8 }}>
     <View style={styles.meterTrack}><View style={[styles.meterFill, { width, backgroundColor: color }]} /></View>
     <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-      <Text style={styles.meterHint}>Низкий уровень</Text><Text style={[styles.meterHint, { color, fontWeight: '700' }]}>{score}%</Text><Text style={styles.meterHint}>Высокий уровень</Text>
+      <Text style={styles.meterHint}>{t('Низкий уровень')}</Text><Text style={[styles.meterHint, { color, fontWeight: '700' }]}>{score}%</Text><Text style={styles.meterHint}>{t('Высокий уровень')}</Text>
     </View>
   </View>;
 }
