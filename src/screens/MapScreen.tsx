@@ -50,7 +50,7 @@ export default function MapScreen() {
 
   const handleRoute = (id: string, name: string) => {
     setActiveRoute(id);
-    Alert.alert('🗺 Маршрут построен', `Безопасный маршрут до "${name}" найден.\nМаршрут проходит через освещённые улицы.`);
+    Alert.alert('Маршруты пока недоступны', `«${name}» — демонстрационное место. Приложение не строит маршруты и не проверяет безопасность улиц.`);
   };
 
   return (
@@ -59,14 +59,13 @@ export default function MapScreen() {
         <Animated.View style={[{ flex: 1 }, { opacity: fadeAnim }]}>
 
           <ScreenHeader
-            eyebrow="Safe Route"
-            title="Карта безопасности"
+            eyebrow="Демонстрационный экран"
+            title="Координаты и места"
             subtitle={
               location
-                ? `${location.latitude.toFixed(4)}, ${location.longitude.toFixed(4)}`
-                : 'Местоположение не определено'
+                ? `${location.latitude.toFixed(4)}, ${location.longitude.toFixed(4)} · места ниже демонстрационные`
+                : 'Определяйте координаты отдельно; карта и места ниже демонстрационные'
             }
-            right={isMonitoring ? <StatusBadge label="GPS online" color={Colors.mint} /> : undefined}
           />
 
           <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>

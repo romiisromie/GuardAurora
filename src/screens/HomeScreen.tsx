@@ -26,7 +26,7 @@ const LOGO = require('../../assets/logo.png');
 
 export default function HomeScreen() {
   const {
-    status, isMonitoring, sosActive, soundLevel, threatScore,
+    status, isMonitoring, sosActive, soundLevel,
     trustedContacts, threatHistory, toggleMonitoring, activateSOS, deactivateSOS,
   } = useApp();
 
@@ -65,7 +65,7 @@ export default function HomeScreen() {
 
   const handleSOS = () => {
     if (sosActive) {
-      Alert.alert('Остановить SOS?', 'Запись и отправка экстренного сигнала будут остановлены.', [
+      Alert.alert('Остановить SOS?', 'Локальный режим SOS будет выключен.', [
         { text: 'Отмена', style: 'cancel' },
         { text: 'Остановить', style: 'destructive', onPress: deactivateSOS },
       ]);
@@ -92,36 +92,38 @@ export default function HomeScreen() {
 
   const handleToggleMonitor = async () => {
     if (!isMonitoring) {
-      await requestPermission();
-      await requestLocation();
+      const microphoneGranted = await requestPermission();
+      if (!microphoneGranted) return;
+      const locationGranted = await requestLocation();
+      if (!locationGranted) return;
     }
     toggleMonitoring();
   };
 
   const statusCfg = {
     safe: {
-      label: 'Под защитой',
+      label: 'Готовность',
       color: Colors.mint,
       ring: Colors.mint,
-      summary: 'Система готова. Экстренный сигнал и доверенные контакты доступны.',
+      summary: 'Можно включить локальный мониторинг, отметить SOS и позвонить контакту вручную.',
     },
     monitoring: {
-      label: 'Фоновый мониторинг',
+      label: 'Мониторинг включён',
       color: Colors.lavender,
       ring: Colors.lavender,
-      summary: 'Микрофон и геолокация работают в фоне, окружение анализируется.',
+      summary: 'Пока приложение открыто, локально измеряется уровень звука и обновляются координаты.',
     },
     alert: {
       label: 'Обнаружен риск',
       color: Colors.warning,
       ring: Colors.warning,
-      summary: 'GuardAurora заметил аномалию и усилил отслеживание обстановки.',
+      summary: 'Высокий уровень звука обнаружен локальным измерителем. Это не определение угрозы.',
     },
     sos: {
       label: 'Экстренный режим',
       color: Colors.danger,
       ring: Colors.danger,
-      summary: 'SOS активирован. Идёт запись, доверенные контакты уведомляются.',
+      summary: 'SOS-событие записано в журнале на устройстве. Контакты и службы не уведомляются.',
     },
   } as const;
 
@@ -148,7 +150,7 @@ export default function HomeScreen() {
                       <Image source={LOGO} style={styles.logo} resizeMode="contain" />
                     </View>
                     <View style={{ flex: 1 }}>
-                      <Text style={styles.heroTitle}>Экстренная защита</Text>
+                      <Text style={styles.heroTitle}>Инструменты безопасности</Text>
                       <Text style={styles.heroSubtitle}>Один тап для SOS, три встряхивания для тихого сигнала.</Text>
                     </View>
                   </View>
@@ -167,9 +169,9 @@ export default function HomeScreen() {
                         ) : (
                           <View style={styles.shieldInner}>
                             <Ionicons name={sosActive ? 'stop-circle' : 'warning'} size={34} color={cfg.color} />
-                            <Text style={styles.sosLabel}>{sosActive ? 'Остановить SOS' : 'Удерживайте для SOS'}</Text>
+                            <Text style={styles.sosLabel}>{sosActive ? 'Остановить SOS' : 'Нажмите для SOS'}</Text>
                             <Text style={styles.sosSubLabel}>
-                              {sosActive ? 'Запись и уведомление активны' : 'Нажмите при реальной угрозе'}
+                              {sosActive ? 'SOS отмечен в журнале на устройстве' : 'SOS не вызывает службы и не отправляет сообщения'}
                             </Text>
                           </View>
                         )}
@@ -185,8 +187,8 @@ export default function HomeScreen() {
                 </View>
 
                 <View style={styles.metricRow}>
-                  <MetricCard label="Контакты" value={String(trustedContacts.length)} hint="получат сигнал" icon="people-outline" />
-                  <MetricCard label="Риск" value={`${threatScore}%`} hint="текущий индекс" icon="pulse-outline" />
+                  <MetricCard label="Контакты" value={String(trustedContacts.length)} hint="сохранены на устройстве" icon="people-outline" />
+                  <MetricCard label="Уровень звука" value={`${soundLevel}%`} hint="микрофон, локально" icon="pulse-outline" />
                   <MetricCard label="События" value={String(threatHistory.length)} hint="в журнале" icon="time-outline" />
                 </View>
               </LinearGradient>
@@ -209,17 +211,17 @@ export default function HomeScreen() {
             <GlassCard style={styles.card}>
               <View style={styles.cardPad}>
                 <SectionTitle label="Анализ угрозы" />
-                <ThreatMeter score={threatScore} />
+                <ThreatMeter score={soundLevel} />
                 <View style={styles.audioBlock}>
                   <View>
                     <Text style={styles.cardTitle}>Акустическая обстановка</Text>
                     <Text style={styles.cardSub}>
                       {isMonitoring
-                        ? 'ИИ отслеживает резкие крики, удары и стрессовые шумовые паттерны.'
-                        : 'Включите мониторинг, чтобы анализ звука работал автоматически.'}
+                        ? 'Микрофон измеряет общий уровень звука, пока приложение открыто. Распознавания угроз нет.'
+                        : 'При включении измеряется общий уровень звука. Угрозы не распознаются.'}
                     </Text>
                   </View>
-                  <SoundWave level={soundLevel} color={threatScore >= 80 ? Colors.danger : Colors.lavender} />
+                  <SoundWave level={soundLevel} color={Colors.lavender} />
                 </View>
               </View>
             </GlassCard>
@@ -245,8 +247,8 @@ export default function HomeScreen() {
                 <View style={styles.cardPad}>
                   <SectionTitle label="Готовность системы" />
                   <ReadinessRow label="Доверенные контакты" value={trustedContacts.length > 0 ? 'Настроено' : 'Не настроено'} good={trustedContacts.length > 0} />
-                  <ReadinessRow label="Фоновый контроль" value={isMonitoring ? 'В сети' : 'Отключен'} good={isMonitoring} />
-                  <ReadinessRow label="Экстренная запись" value={sosActive ? 'Идет запись' : 'Ожидание'} good />
+                  <ReadinessRow label="Мониторинг на экране" value={isMonitoring ? 'Включён' : 'Отключен'} good={isMonitoring} />
+                  <ReadinessRow label="Локальная отметка SOS" value={sosActive ? 'Активна' : 'Ожидание'} good />
                 </View>
               </GlassCard>
             </View>

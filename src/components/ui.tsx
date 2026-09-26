@@ -240,7 +240,7 @@ export function ThreatMeter({ score }: { score: number }) {
   useEffect(() => {
     Animated.timing(anim, { toValue: score / 100, duration: 500, useNativeDriver: false }).start();
   }, [score]);
-  const color = score >= 80 ? Colors.danger : score >= 50 ? Colors.warning : Colors.safe;
+  const color = Colors.lavender;
   return (
     <View style={{ gap: 8 }}>
       <View style={styles.meterTrack}>
@@ -250,9 +250,9 @@ export function ThreatMeter({ score }: { score: number }) {
         }]} />
       </View>
       <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-        <Text style={{ fontSize: 11, color: Colors.textMuted }}>Безопасно</Text>
+        <Text style={{ fontSize: 11, color: Colors.textMuted }}>Тихо</Text>
         <Text style={{ fontSize: 11, color, fontWeight: '700' }}>{score}%</Text>
-        <Text style={{ fontSize: 11, color: Colors.danger }}>Угроза</Text>
+        <Text style={{ fontSize: 11, color: Colors.textMuted }}>Громко</Text>
       </View>
     </View>
   );

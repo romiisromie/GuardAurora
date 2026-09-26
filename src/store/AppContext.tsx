@@ -1,4 +1,9 @@
 import React, { createContext, useContext, useState, useCallback, useRef, useEffect } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { captureException } from '../lib/monitoring';
+
+const CONTACTS_KEY = 'ga.contacts';
+const HISTORY_KEY = 'ga.history';
 
 export interface TrustedContact {
   id: string;
@@ -29,13 +34,12 @@ export type AppStatus = 'safe' | 'monitoring' | 'alert' | 'sos';
 interface AppState {
   status: AppStatus;
   isMonitoring: boolean;
-  isRecording: boolean;
   location: LocationData | null;
   trustedContacts: TrustedContact[];
   threatHistory: ThreatEvent[];
   sosActive: boolean;
   soundLevel: number;
-  threatScore: number;
+  hydrated: boolean;
 }
 
 interface AppActions {
@@ -47,33 +51,57 @@ interface AppActions {
   removeContact: (id: string) => void;
   updateLocation: (l: LocationData) => void;
   addThreatEvent: (e: ThreatEvent) => void;
+  clearLocalData: () => Promise<void>;
   setSoundLevel: (n: number) => void;
-  setThreatScore: (n: number) => void;
-  setRecording: (b: boolean) => void;
 }
-
-const defaultContacts: TrustedContact[] = [
-  { id: '1', name: 'Мама', phone: '+7 777 123 4567', relation: 'Семья', avatar: '👩' },
-  { id: '2', name: 'Айгерим', phone: '+7 701 987 6543', relation: 'Подруга', avatar: '👩‍🦱' },
-];
 
 const Ctx = createContext<(AppState & AppActions) | null>(null);
 
 export function AppProvider({ children }: { children: React.ReactNode }) {
   const [status, setStatus] = useState<AppStatus>('safe');
   const [isMonitoring, setIsMonitoring] = useState(false);
-  const [isRecording, setIsRecording] = useState(false);
   const [location, setLocation] = useState<LocationData | null>(null);
-  const [trustedContacts, setTrustedContacts] = useState<TrustedContact[]>(defaultContacts);
+  const [trustedContacts, setTrustedContacts] = useState<TrustedContact[]>([]);
   const [threatHistory, setThreatHistory] = useState<ThreatEvent[]>([]);
   const [sosActive, setSosActive] = useState(false);
   const [soundLevel, setSoundLevel] = useState(0);
-  const [threatScore, setThreatScoreState] = useState(0);
+  const [hydrated, setHydrated] = useState(false);
   const sosActiveRef = useRef(false);
 
   useEffect(() => {
     sosActiveRef.current = sosActive;
   }, [sosActive]);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const [rawContacts, rawHistory] = await Promise.all([
+          AsyncStorage.getItem(CONTACTS_KEY),
+          AsyncStorage.getItem(HISTORY_KEY),
+        ]);
+        if (rawContacts) setTrustedContacts(JSON.parse(rawContacts));
+        if (rawHistory) setThreatHistory(JSON.parse(rawHistory));
+      } catch (e) {
+        captureException(e, 'hydrate');
+      } finally {
+        setHydrated(true);
+      }
+    })();
+  }, []);
+
+  useEffect(() => {
+    if (!hydrated) return;
+    AsyncStorage.setItem(CONTACTS_KEY, JSON.stringify(trustedContacts)).catch((e) =>
+      captureException(e, 'save-contacts'),
+    );
+  }, [trustedContacts, hydrated]);
+
+  useEffect(() => {
+    if (!hydrated) return;
+    AsyncStorage.setItem(HISTORY_KEY, JSON.stringify(threatHistory.slice(0, 50))).catch((e) =>
+      captureException(e, 'save-history'),
+    );
+  }, [threatHistory, hydrated]);
 
   const toggleMonitoring = useCallback(() => {
     setIsMonitoring(p => {
@@ -89,7 +117,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     sosActiveRef.current = true;
     setSosActive(true);
     setStatus('sos');
-    setIsRecording(true);
     setThreatHistory(p => [{
       id: Date.now().toString(),
       timestamp: Date.now(),
@@ -102,8 +129,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const deactivateSOS = useCallback(() => {
     sosActiveRef.current = false;
     setSosActive(false);
-    setIsRecording(false);
-    setThreatScoreState(0);
     setIsMonitoring(p => { setStatus(p ? 'monitoring' : 'safe'); return p; });
   }, []);
 
@@ -121,19 +146,23 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     setThreatHistory(p => [e, ...p.slice(0, 49)]);
   }, []);
 
-  const setThreatScore = useCallback((score: number) => {
-    setThreatScoreState(score);
-    if (score >= 80) setStatus('alert');
-    else if (score < 50) setStatus(p => p === 'alert' ? 'monitoring' : p);
+  const clearLocalData = useCallback(async () => {
+    setTrustedContacts([]);
+    setThreatHistory([]);
+    try {
+      await AsyncStorage.multiRemove([CONTACTS_KEY, HISTORY_KEY]);
+    } catch (e) {
+      captureException(e, 'clear-data');
+    }
   }, []);
 
   return (
     <Ctx.Provider value={{
-      status, isMonitoring, isRecording, location, trustedContacts,
-      threatHistory, sosActive, soundLevel, threatScore,
+      status, isMonitoring, location, trustedContacts,
+      threatHistory, sosActive, soundLevel, hydrated,
       setStatus, toggleMonitoring, activateSOS, deactivateSOS,
-      addContact, removeContact, updateLocation, addThreatEvent,
-      setSoundLevel, setThreatScore, setRecording: setIsRecording,
+      addContact, removeContact, updateLocation, addThreatEvent, clearLocalData,
+      setSoundLevel,
     }}>
       {children}
     </Ctx.Provider>

@@ -8,6 +8,7 @@ import MapScreen from '../screens/MapScreen';
 import ChatScreen from '../screens/ChatScreen';
 import ContactsScreen from '../screens/ContactsScreen';
 import HistoryScreen from '../screens/HistoryScreen';
+import LegalScreen from '../screens/LegalScreen';
 import { useApp } from '../store/AppContext';
 import { Colors, Radius } from '../theme';
 
@@ -19,6 +20,7 @@ const TABS = [
   { name: 'Chat', icon: 'chatbubble-ellipses', label: 'ИИ Чат' },
   { name: 'Contacts', icon: 'people', label: 'Контакты' },
   { name: 'History', icon: 'time', label: 'Журнал' },
+  { name: 'Legal', icon: 'information-circle', label: 'Право' },
 ];
 
 const navTheme = {
@@ -111,6 +113,7 @@ export default function Navigation() {
         <Tab.Screen name="Chat" component={ChatScreen} />
         <Tab.Screen name="Contacts" component={ContactsScreen} />
         <Tab.Screen name="History" component={HistoryScreen} />
+        <Tab.Screen name="Legal" component={LegalScreen} />
       </Tab.Navigator>
     </NavigationContainer>
   );
