@@ -1,7 +1,27 @@
 {
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "installCommand": "npm ci",
+  "buildCommand": "npm run build:web",
+  "outputDirectory": "dist",
   "cleanUrls": true,
   "trailingSlash": false,
   "rewrites": [
-    { "source": "/(.*)", "destination": "/public-qr/index.html" }
+    { "source": "/emergency", "destination": "/emergency/index.html" },
+    {
+      "source": "/:path*",
+      "has": [{ "type": "query", "key": "name" }],
+      "destination": "/emergency"
+    },
+    {
+      "source": "/:path*",
+      "has": [{ "type": "query", "key": "status" }],
+      "destination": "/emergency"
+    },
+    {
+      "source": "/:path*",
+      "has": [{ "type": "query", "key": "contact" }],
+      "destination": "/emergency"
+    },
+    { "source": "/:path*", "destination": "/index.html" }
   ]
 }
