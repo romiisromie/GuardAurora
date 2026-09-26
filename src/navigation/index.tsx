@@ -35,6 +35,20 @@ const navTheme = {
   },
 };
 
+const linking = {
+  prefixes: [],
+  config: {
+    screens: {
+      Home: '',
+      Map: 'map',
+      Chat: 'chat',
+      Contacts: 'contacts',
+      History: 'history',
+      Legal: 'privacy',
+    },
+  },
+};
+
 function CustomTabBar({ state, navigation }: any) {
   const { sosActive, isMonitoring } = useApp();
 
@@ -103,7 +117,7 @@ function CustomTabBar({ state, navigation }: any) {
 
 export default function Navigation() {
   return (
-    <NavigationContainer theme={navTheme}>
+    <NavigationContainer theme={navTheme} linking={linking}>
       <Tab.Navigator
         tabBar={(props) => <CustomTabBar {...props} />}
         screenOptions={{ headerShown: false }}

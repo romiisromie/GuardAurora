@@ -1,6 +1,7 @@
 # GuardAurora QR Always-On
 
-Эта папка уже содержит публичную страницу для QR: `public-qr/index.html`.
+Эта папка содержит публичную аварийную страницу для QR: `public-qr/index.html`.
+Основная ссылка Vercel открывает веб-версию приложения, а аварийная страница доступна по адресу `/emergency`.
 
 ## Что это решает
 
@@ -23,7 +24,9 @@
 
 Ссылка для QR (пример):
 
-`https://guardaurora-qr.vercel.app/?name=Alina&status=SOS&contact=%2B77771234567`
+`https://guardaurora-qr.vercel.app/emergency?name=Alina&status=SOS&contact=%2B77771234567`
+
+Старые QR-ссылки с параметрами `name`, `status` или `contact` в корне домена также перенаправляются на аварийную страницу.
 
 Где:
 - `name` - имя
