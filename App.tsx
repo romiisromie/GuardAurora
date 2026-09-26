@@ -7,6 +7,7 @@ import { AppProvider } from './src/store/AppContext';
 import Navigation from './src/navigation';
 import { ErrorBoundary } from './src/components/ErrorBoundary';
 import { initMonitoring } from './src/lib/monitoring';
+import { LanguageProvider } from './src/i18n';
 
 initMonitoring();
 
@@ -16,8 +17,10 @@ export default function App() {
       <GestureHandlerRootView style={{ flex: 1 }}>
         <SafeAreaProvider>
           <AppProvider>
-            <StatusBar style="dark" backgroundColor="#F3F7F4" />
-            <Navigation />
+            <LanguageProvider>
+              <StatusBar style="dark" backgroundColor="#F3F7F4" />
+              <Navigation />
+            </LanguageProvider>
           </AppProvider>
         </SafeAreaProvider>
       </GestureHandlerRootView>

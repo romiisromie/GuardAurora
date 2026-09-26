@@ -11,6 +11,7 @@ import HistoryScreen from '../screens/HistoryScreen';
 import LegalScreen from '../screens/LegalScreen';
 import { useApp } from '../store/AppContext';
 import { Colors } from '../theme';
+import { useLanguage } from '../i18n';
 
 const Tab = createBottomTabNavigator();
 
@@ -18,7 +19,7 @@ const TABS = [
   { name: 'Home', icon: 'shield', label: 'Защита' },
   { name: 'Map', icon: 'map', label: 'Карта' },
   { name: 'Chat', icon: 'chatbubble-ellipses', label: 'Помощь' },
-  { name: 'Contacts', icon: 'people', label: 'Контакты' },
+  { name: 'Contacts', icon: 'people', label: 'Люди' },
   { name: 'History', icon: 'time', label: 'Журнал' },
   { name: 'Legal', icon: 'information-circle', label: 'Право' },
 ];
@@ -51,6 +52,7 @@ const linking = {
 
 function CustomTabBar({ state, navigation }: any) {
   const { sosActive } = useApp();
+  const { t } = useLanguage();
 
   return (
     <View style={styles.tabBarWrap}>
@@ -71,7 +73,7 @@ function CustomTabBar({ state, navigation }: any) {
           };
 
           return (
-            <TouchableOpacity key={route.key} onPress={onPress} style={styles.tabItem} activeOpacity={0.7} accessibilityRole="tab" accessibilityState={{ selected: isFocused }} accessibilityLabel={tab.label}>
+            <TouchableOpacity key={route.key} onPress={onPress} style={styles.tabItem} activeOpacity={0.7} accessibilityRole="tab" accessibilityState={{ selected: isFocused }} accessibilityLabel={t(tab.label)}>
               <View style={styles.tabIconWrap}>
                 <Ionicons
                   name={(isFocused ? tab.icon : `${tab.icon}-outline`) as any}
@@ -80,7 +82,7 @@ function CustomTabBar({ state, navigation }: any) {
                 />
               </View>
               <Text style={[styles.tabLabel, { color: isFocused ? Colors.lavender : Colors.textMuted }]}>
-                {tab.label}
+                {t(tab.label)}
               </Text>
             </TouchableOpacity>
           );

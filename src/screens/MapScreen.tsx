@@ -6,8 +6,10 @@ import { useApp } from '../store/AppContext';
 import { useLocation } from '../hooks/useLocation';
 import { GlassCard, GradientButton, ScreenHeader } from '../components/ui';
 import { Colors, Spacing, Radius } from '../theme';
+import { useLanguage } from '../i18n';
 
 export default function MapScreen() {
+  const { t, locale } = useLanguage();
   const { location } = useApp();
   const { getCurrentLocation } = useLocation();
   const [loading, setLoading] = useState(false);
@@ -27,7 +29,7 @@ export default function MapScreen() {
     try {
       await Linking.openURL(url);
     } catch {
-      Alert.alert('Карты недоступны', 'Не удалось открыть приложение или сайт карт.');
+      Alert.alert(t('Карты недоступны'), t('Не удалось открыть приложение или сайт карт.'));
     }
   };
 
@@ -35,9 +37,9 @@ export default function MapScreen() {
     <View style={{ flex: 1, backgroundColor: Colors.bg }}>
       <SafeAreaView style={{ flex: 1 }}>
         <ScreenHeader
-          eyebrow="Местоположение"
-          title="Карта"
-          subtitle="Получите координаты телефона и откройте их в установленном приложении карт."
+          eyebrow={t('Местоположение')}
+          title={t('Карта')}
+          subtitle={t('Получите координаты телефона и откройте их в установленном приложении карт.')}
         />
         <ScrollView contentContainerStyle={styles.scroll}>
           <GlassCard style={styles.card} accentColor={Colors.cyan}>
@@ -45,15 +47,15 @@ export default function MapScreen() {
               <View style={styles.iconCircle}>
                 <Ionicons name="navigate" size={26} color={Colors.cyan} />
               </View>
-              <Text style={styles.title}>{location ? 'Последние координаты' : 'Местоположение не определено'}</Text>
+              <Text style={styles.title}>{location ? t('Последние координаты') : t('Местоположение не определено')}</Text>
               {location ? (
                 <>
                   <Text selectable style={styles.coordinates}>
                     {location.latitude.toFixed(6)}, {location.longitude.toFixed(6)}
                   </Text>
-                  <Text style={styles.detail}>Точность около {Math.round(location.accuracy)} м · {new Date(location.timestamp).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })}</Text>
+                  <Text style={styles.detail}>{t('Точность около')} {Math.round(location.accuracy)} м · {new Date(location.timestamp).toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' })}</Text>
                   <GradientButton
-                    label="Открыть координаты в картах"
+                    label={t('Открыть координаты в картах')}
                     onPress={openMaps}
                     colors={Colors.gradMint}
                     size="md"
@@ -61,13 +63,13 @@ export default function MapScreen() {
                   />
                 </>
               ) : (
-                <Text style={styles.detail}>Геолокация запрашивается только после нажатия. Координаты остаются на устройстве, пока вы сами не откроете их в картах.</Text>
+                <Text style={styles.detail}>{t('Геолокация запрашивается только после нажатия. Координаты остаются на устройстве, пока вы сами не откроете их в картах.')}</Text>
               )}
             </View>
           </GlassCard>
 
           <GradientButton
-            label={loading ? 'Определяем местоположение…' : 'Обновить местоположение'}
+            label={loading ? t('Определяем местоположение…') : t('Обновить местоположение')}
             onPress={refreshLocation}
             loading={loading}
             disabled={loading}
@@ -78,7 +80,7 @@ export default function MapScreen() {
             <View style={styles.noteRow}>
               <Ionicons name="information-circle-outline" size={22} color={Colors.gold} />
               <Text style={styles.detail}>
-                Приложение не содержит базы безопасных мест и не оценивает маршруты. В экстренной ситуации свяжитесь с местной службой помощи.
+                {t('Приложение не содержит базы безопасных мест и не оценивает маршруты. В экстренной ситуации свяжитесь с местной службой помощи.')}
               </Text>
             </View>
           </GlassCard>

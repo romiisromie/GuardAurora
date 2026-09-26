@@ -6,22 +6,24 @@ import Constants from 'expo-constants';
 import { GlassCard, ScreenHeader, SectionTitle, GradientButton } from '../components/ui';
 import { Colors, Spacing, Radius } from '../theme';
 import { Config } from '../config';
-import { PRIVACY_POLICY_SECTIONS, PRIVACY_POLICY_UPDATED } from '../legal/privacyPolicy';
+import { PRIVACY_POLICY_SECTIONS } from '../legal/privacyPolicy';
 import { useApp } from '../store/AppContext';
+import { LANGUAGE_OPTIONS, useLanguage } from '../i18n';
 
 export default function LegalScreen() {
   const { clearLocalData, hydrated, sosActive } = useApp();
+  const { language, setLanguage, t } = useLanguage();
 
   const openUrl = async (url: string) => {
     try {
       const supported = await Linking.canOpenURL(url);
       if (!supported) {
-        Alert.alert('Ссылка недоступна', 'Скопируйте адрес с сайта приложения или напишите в поддержку.');
+        Alert.alert(t('Ссылка недоступна'), t('Скопируйте адрес с сайта приложения или напишите в поддержку.'));
         return;
       }
       await Linking.openURL(url);
     } catch {
-      Alert.alert('Ошибка', 'Не удалось открыть ссылку.');
+      Alert.alert(t('Ошибка'), t('Не удалось открыть ссылку.'));
     }
   };
 
@@ -29,23 +31,23 @@ export default function LegalScreen() {
 
   const handleClear = () => {
     if (sosActive) {
-      Alert.alert('Сначала остановите SOS', 'Завершите активный режим SOS, чтобы не потерять событие до его завершения.');
+      Alert.alert(t('Сначала остановите SOS'), t('Завершите активный режим SOS, чтобы не потерять событие до его завершения.'));
       return;
     }
     Alert.alert(
-      'Удалить локальные данные?',
-      'Будут удалены доверенные контакты и журнал на этом устройстве. Облачного аккаунта нет.',
+      t('Удалить локальные данные?'),
+      t('Будут удалены доверенные контакты и журнал на этом устройстве. Облачного аккаунта нет.'),
       [
-        { text: 'Отмена', style: 'cancel' },
+        { text: t('Отмена'), style: 'cancel' },
         {
-          text: 'Удалить',
+          text: t('Удалить'),
           style: 'destructive',
           onPress: async () => {
             try {
               await clearLocalData();
-              Alert.alert('Готово', 'Доверенные контакты и журнал событий удалены с этого устройства.');
+              Alert.alert(t('Готово'), t('Доверенные контакты и журнал событий удалены с этого устройства.'));
             } catch {
-              Alert.alert('Не удалось удалить данные', 'Освободите место на устройстве и попробуйте ещё раз.');
+              Alert.alert(t('Не удалось удалить данные'), t('Освободите место на устройстве и попробуйте ещё раз.'));
             }
           },
         },
@@ -58,21 +60,30 @@ export default function LegalScreen() {
       <SafeAreaView style={{ flex: 1 }}>
         <View>
           <ScreenHeader
-            eyebrow="Legal"
-            title="Правовая информация"
-            subtitle={`Обновлено ${PRIVACY_POLICY_UPDATED}`}
+            eyebrow={t('Конфиденциальность')}
+            title={t('Правовая информация')}
+            subtitle={`${t('Обновлено')} ${new Date(2026, 8, 26).toLocaleDateString(language === 'kk' ? 'kk-KZ' : language === 'en' ? 'en-US' : 'ru-RU', { year: 'numeric', month: 'long' })}`}
           />
         </View>
         <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
           <GlassCard style={styles.card} accentColor={Colors.lavender}>
             <View style={styles.pad}>
+              <Text style={styles.h}>{t('Язык приложения')}</Text>
+              <View style={styles.languageRow}>
+                {LANGUAGE_OPTIONS.map((option) => {
+                  const selected = option.code === language;
+                  return <TouchableOpacity key={option.code} onPress={() => setLanguage(option.code)} accessibilityRole="button" accessibilityState={{ selected }} style={[styles.languageButton, selected && styles.languageButtonSelected]}>
+                    <Text style={[styles.languageText, selected && styles.languageTextSelected]}>{option.label}</Text>
+                  </TouchableOpacity>;
+                })}
+              </View>
               <Text style={styles.lead}>
-                В этой версии нет регистрации или облачной учётной записи. Контакты, журнал и ответы чата хранятся на устройстве. SOS не вызывает службы и не уведомляет контакты автоматически.
+                {t('В этой версии нет регистрации или облачной учётной записи. Контакты, журнал и ответы чата хранятся на устройстве. SOS не вызывает службы и не уведомляет контакты автоматически.')}
               </Text>
               {Config.privacyPolicyUrl ? (
-                <GradientButton label="Открыть политику конфиденциальности" onPress={() => openUrl(Config.privacyPolicyUrl)} size="md" style={{ marginTop: Spacing.md }} />
+                <GradientButton label={t('Открыть политику конфиденциальности')} onPress={() => openUrl(Config.privacyPolicyUrl)} size="md" style={{ marginTop: Spacing.md }} />
               ) : (
-                <Text style={styles.body}>Ссылка на публичную политику не настроена. Её необходимо добавить до отправки приложения в магазины.</Text>
+                <Text style={styles.body}>{t('Ссылка на публичную политику не настроена. Её необходимо добавить до отправки приложения в магазины.')}</Text>
               )}
               {Config.supportEmail ? (
                 <TouchableOpacity style={styles.linkRow} onPress={mailSupport}>
@@ -80,25 +91,25 @@ export default function LegalScreen() {
                   <Text style={styles.linkText}>{Config.supportEmail}</Text>
                 </TouchableOpacity>
               ) : (
-                <Text style={styles.body}>Контакт поддержки будет добавлен владельцем перед публикацией.</Text>
+                <Text style={styles.body}>{t('Контакт поддержки будет добавлен владельцем перед публикацией.')}</Text>
               )}
-              <Text style={styles.meta}>Версия {Constants.expoConfig?.version ?? '1.0.0'}{hydrated ? '' : ' · загружаем локальные данные'}</Text>
+              <Text style={styles.meta}>{t('Версия')} {Constants.expoConfig?.version ?? '1.0.0'}{hydrated ? '' : ` · ${t('загружаем локальные данные')}`}</Text>
             </View>
           </GlassCard>
 
-          <SectionTitle label="Политика конфиденциальности" />
+          <SectionTitle label={t('Политика конфиденциальности')} />
           {PRIVACY_POLICY_SECTIONS.map((s) => (
             <GlassCard key={s.heading} style={styles.card}>
               <View style={styles.pad}>
-                <Text style={styles.h}>{s.heading}</Text>
-                <Text style={styles.body}>{s.body}</Text>
+                <Text style={styles.h}>{t(s.heading)}</Text>
+                <Text style={styles.body}>{t(s.body)}</Text>
               </View>
             </GlassCard>
           ))}
 
-          <SectionTitle label="Данные на устройстве" />
+          <SectionTitle label={t('Данные на устройстве')} />
           <GradientButton
-            label={sosActive ? 'Остановите SOS, чтобы удалить данные' : 'Удалить локальные данные'}
+            label={t(sosActive ? 'Остановите SOS, чтобы удалить данные' : 'Удалить локальные данные')}
             onPress={handleClear}
             disabled={sosActive}
             colors={Colors.gradDanger}
@@ -118,6 +129,11 @@ const styles = StyleSheet.create({
   linkRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: Spacing.md },
   linkText: { color: Colors.lavender, fontWeight: '600' },
   meta: { color: Colors.textMuted, fontSize: 12, marginTop: 8 },
+  languageRow: { flexDirection: 'row', gap: 8, marginTop: 8, marginBottom: Spacing.md },
+  languageButton: { flex: 1, alignItems: 'center', paddingVertical: 10, borderRadius: Radius.full, backgroundColor: Colors.bgCardLight, borderWidth: 1, borderColor: Colors.border },
+  languageButtonSelected: { backgroundColor: Colors.lavender, borderColor: Colors.lavender },
+  languageText: { color: Colors.textSecondary, fontSize: 13, fontWeight: '600' },
+  languageTextSelected: { color: '#FFFFFF' },
   h: { color: Colors.white, fontWeight: '700', fontSize: 15, marginBottom: 8 },
   body: { color: Colors.textSecondary, fontSize: 14, lineHeight: 21 },
 });
