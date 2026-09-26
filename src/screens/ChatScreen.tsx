@@ -89,11 +89,11 @@ export default function ChatScreen() {
                 <Image source={LOGO} style={styles.aiAvatar} resizeMode="contain" />
               </View>
               <View style={{ flex: 1 }}>
-                <Text style={styles.headerEyebrow}>Локальный помощник</Text>
-                <Text style={styles.headerTitle}>GuardAurora</Text>
-                <View style={styles.onlineRow}>
+              <Text style={styles.headerEyebrow}>Офлайн-справка</Text>
+              <Text style={styles.headerTitle}>Помощь GuardAurora</Text>
+              <View style={styles.onlineRow}>
                   <View style={styles.onlineDot} />
-                  <Text style={styles.onlineText}>Локальные ответы · без отправки данных</Text>
+              <Text style={styles.onlineText}>Готовые ответы · без отправки данных</Text>
                 </View>
               </View>
             </View>

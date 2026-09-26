@@ -1,5 +1,6 @@
 import { useEffect, useRef, useCallback } from 'react';
 import { Accelerometer } from 'expo-sensors';
+import { AppState } from 'react-native';
 import { useApp } from '../store/AppContext';
 
 /** Порог ускорения (g-эквивалент по величине вектора), выше — считаем пик встряхивания. */
@@ -61,12 +62,20 @@ export function useShakeDetector() {
   }, [resetSequence]);
 
   useEffect(() => {
-    if (isMonitoring && !sosActive) {
-      resetSequence();
-      start();
-    } else {
+    const sync = (state: string) => {
+      if (isMonitoring && !sosActive && state === 'active') {
+        resetSequence();
+        start();
+      } else {
+        stop();
+      }
+    };
+
+    sync(AppState.currentState);
+    const subscription = AppState.addEventListener('change', sync);
+    return () => {
+      subscription.remove();
       stop();
-    }
-    return stop;
+    };
   }, [isMonitoring, sosActive, start, stop, resetSequence]);
 }

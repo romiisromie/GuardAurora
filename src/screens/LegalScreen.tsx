@@ -3,7 +3,6 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Linking, Alert } 
 import { LinearGradient } from 'expo-linear-gradient';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { useNavigation } from '@react-navigation/native';
 import Constants from 'expo-constants';
 import { GlassCard, ScreenHeader, SectionTitle, GradientButton } from '../components/ui';
 import { Colors, Spacing, Radius } from '../theme';
@@ -12,8 +11,7 @@ import { PRIVACY_POLICY_SECTIONS, PRIVACY_POLICY_UPDATED } from '../legal/privac
 import { useApp } from '../store/AppContext';
 
 export default function LegalScreen() {
-  const navigation = useNavigation();
-  const { clearLocalData } = useApp();
+  const { clearLocalData, hydrated, sosActive } = useApp();
 
   const openUrl = async (url: string) => {
     try {
@@ -31,6 +29,10 @@ export default function LegalScreen() {
   const mailSupport = () => openUrl(`mailto:${Config.supportEmail}`);
 
   const handleClear = () => {
+    if (sosActive) {
+      Alert.alert('Сначала остановите SOS', 'Завершите активный режим SOS, чтобы не потерять событие до его завершения.');
+      return;
+    }
     Alert.alert(
       'Удалить локальные данные?',
       'Будут удалены доверенные контакты и журнал на этом устройстве. Облачного аккаунта нет.',
@@ -40,8 +42,12 @@ export default function LegalScreen() {
           text: 'Удалить',
           style: 'destructive',
           onPress: async () => {
-            await clearLocalData();
-            Alert.alert('Готово', 'Локальные данные удалены.');
+            try {
+              await clearLocalData();
+              Alert.alert('Готово', 'Доверенные контакты и журнал событий удалены с этого устройства.');
+            } catch {
+              Alert.alert('Не удалось удалить данные', 'Освободите место на устройстве и попробуйте ещё раз.');
+            }
           },
         },
       ],
@@ -51,10 +57,7 @@ export default function LegalScreen() {
   return (
     <LinearGradient colors={['#0d0118', '#160d24']} style={{ flex: 1 }}>
       <SafeAreaView style={{ flex: 1 }}>
-        <View style={styles.topRow}>
-          <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
-            <Ionicons name="chevron-back" size={22} color={Colors.white} />
-          </TouchableOpacity>
+        <View>
           <ScreenHeader
             eyebrow="Legal"
             title="Правовая информация"
@@ -65,16 +68,13 @@ export default function LegalScreen() {
           <GlassCard style={styles.card} accentColor={Colors.lavender}>
             <View style={styles.pad}>
               <Text style={styles.lead}>
-                Регистрации нет. Контакты, журнал и ответы чата обрабатываются на устройстве; чат не отправляет сообщения в сеть.
+                В этой версии нет регистрации или облачной учётной записи. Контакты, журнал и ответы чата хранятся на устройстве. SOS не вызывает службы и не уведомляет контакты автоматически.
               </Text>
               {Config.privacyPolicyUrl ? (
-                <GradientButton
-                  label="Открыть политику в браузере"
-                  onPress={() => openUrl(Config.privacyPolicyUrl)}
-                  size="md"
-                  style={{ marginTop: Spacing.md }}
-                />
-              ) : null}
+                <GradientButton label="Открыть политику конфиденциальности" onPress={() => openUrl(Config.privacyPolicyUrl)} size="md" style={{ marginTop: Spacing.md }} />
+              ) : (
+                <Text style={styles.body}>Ссылка на публичную политику не настроена. Её необходимо добавить до отправки приложения в магазины.</Text>
+              )}
               {Config.supportEmail ? (
                 <TouchableOpacity style={styles.linkRow} onPress={mailSupport}>
                   <Ionicons name="mail-outline" size={18} color={Colors.lavender} />
@@ -83,7 +83,7 @@ export default function LegalScreen() {
               ) : (
                 <Text style={styles.body}>Контакт поддержки будет добавлен владельцем перед публикацией.</Text>
               )}
-              <Text style={styles.meta}>Версия {Constants.expoConfig?.version ?? '1.0.0'}</Text>
+              <Text style={styles.meta}>Версия {Constants.expoConfig?.version ?? '1.0.0'}{hydrated ? '' : ' · загружаем локальные данные'}</Text>
             </View>
           </GlassCard>
 
@@ -99,8 +99,9 @@ export default function LegalScreen() {
 
           <SectionTitle label="Данные на устройстве" />
           <GradientButton
-            label="Удалить контакты и журнал"
+            label={sosActive ? 'Остановите SOS, чтобы удалить данные' : 'Удалить локальные данные'}
             onPress={handleClear}
+            disabled={sosActive}
             colors={Colors.gradDanger}
             size="md"
           />
@@ -111,19 +112,6 @@ export default function LegalScreen() {
 }
 
 const styles = StyleSheet.create({
-  topRow: { flexDirection: 'row', alignItems: 'flex-start' },
-  backBtn: {
-    marginLeft: Spacing.md,
-    marginTop: Spacing.md,
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: Colors.bgGlass,
-    borderWidth: 1,
-    borderColor: Colors.border,
-  },
   scroll: { paddingHorizontal: Spacing.lg, paddingBottom: 40 },
   card: { marginBottom: Spacing.md },
   pad: { padding: Spacing.md },

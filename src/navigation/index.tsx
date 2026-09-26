@@ -17,7 +17,7 @@ const Tab = createBottomTabNavigator();
 const TABS = [
   { name: 'Home', icon: 'shield', label: 'Защита' },
   { name: 'Map', icon: 'map', label: 'Карта' },
-  { name: 'Chat', icon: 'chatbubble-ellipses', label: 'ИИ Чат' },
+  { name: 'Chat', icon: 'chatbubble-ellipses', label: 'Помощь' },
   { name: 'Contacts', icon: 'people', label: 'Контакты' },
   { name: 'History', icon: 'time', label: 'Журнал' },
   { name: 'Legal', icon: 'information-circle', label: 'Право' },
@@ -78,7 +78,7 @@ function CustomTabBar({ state, navigation }: any) {
                 ? Colors.lavender
                 : Colors.rose;
             return (
-              <TouchableOpacity key={route.key} onPress={onPress} style={styles.tabItem} activeOpacity={0.7}>
+              <TouchableOpacity key={route.key} onPress={onPress} style={styles.tabItem} activeOpacity={0.7} accessibilityRole="tab" accessibilityState={{ selected: isFocused }} accessibilityLabel={tab.label}>
                 <View style={[styles.homeBtnOuter, { shadowColor: ringColor }]}>
                   <View style={[styles.homeBtn, { borderColor: ringColor, backgroundColor: `${ringColor}18` }]}>
                   <Ionicons
@@ -96,7 +96,7 @@ function CustomTabBar({ state, navigation }: any) {
           }
 
           return (
-            <TouchableOpacity key={route.key} onPress={onPress} style={styles.tabItem} activeOpacity={0.7}>
+            <TouchableOpacity key={route.key} onPress={onPress} style={styles.tabItem} activeOpacity={0.7} accessibilityRole="tab" accessibilityState={{ selected: isFocused }} accessibilityLabel={tab.label}>
               <View style={[styles.tabIconWrap, isFocused && styles.tabIconActive]}>
                 <Ionicons
                   name={(isFocused ? tab.icon : `${tab.icon}-outline`) as any}

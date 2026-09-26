@@ -8,7 +8,7 @@ import { GlassCard, StatusBadge, ScreenHeader, SectionTitle } from '../component
 import { Colors, Spacing, Radius } from '../theme';
 
 const EVENT_CFG = {
-  sound:  { icon: '🎙', label: 'Звуковая угроза', color: Colors.warning },
+  sound:  { icon: '🎙', label: 'Измерение звука', color: Colors.warning },
   manual: { icon: '🚨', label: 'Ручной SOS',      color: Colors.danger },
   shake:  { icon: '📳', label: 'Тихий SOS',        color: Colors.rose },
 };
@@ -16,7 +16,7 @@ const LEVEL_COLOR = { low: Colors.mint, medium: Colors.warning, high: Colors.dan
 const LEVEL_LABEL = { low: 'Низкий', medium: 'Средний', high: 'Высокий' };
 
 const TIPS = [
-  { icon: '📳', t: 'Тихий SOS', d: 'Встряхивание отмечает SOS локально; контакты и службы не получают уведомления' },
+  { icon: '📳', t: 'Тихий SOS', d: 'Три быстрых встряхивания при включённом мониторинге отмечают событие локально; контакты и службы не получают уведомления' },
   { icon: '🔋', t: 'Заряд батареи', d: 'Следи за зарядом, чтобы телефон оставался доступен для звонков' },
   { icon: '📡', t: 'Интернет', d: 'Координаты запрашиваются у системы геолокации; чат отвечает локально' },
   { icon: '👥', t: 'Контакты', d: 'Добавь 2–3 доверенных человека с разными операторами' },
@@ -51,7 +51,7 @@ export default function HistoryScreen() {
             <View style={styles.statsRow}>
               {[
                 { num: threatHistory.filter(e => e.type === 'manual').length, label: 'SOS', icon: '🚨', color: Colors.rose },
-                { num: threatHistory.filter(e => e.level === 'high').length, label: 'Угрозы', icon: '⚠️', color: Colors.warning },
+                { num: threatHistory.filter(e => e.level === 'high').length, label: 'Сигналы SOS', icon: '⚠️', color: Colors.warning },
                 { num: trustedContacts.length, label: 'Контакты', icon: '👥', color: Colors.mint },
               ].map((s, i) => (
                 <GlassCard key={i} style={styles.statCard} accentColor={s.color}>
@@ -84,7 +84,7 @@ export default function HistoryScreen() {
                 <Text style={{ fontSize: 60 }}>📋</Text>
                 <Text style={styles.emptyTitle}>Журнал пуст</Text>
                 <Text style={styles.emptyDesc}>
-                  Здесь появятся SOS-сигналы, обнаруженные угрозы и сессии мониторинга
+                  Здесь появятся локальные сигналы SOS. Автоматического распознавания угроз нет.
                 </Text>
               </View>
             ) : (
