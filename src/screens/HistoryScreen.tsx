@@ -1,6 +1,5 @@
 import React, { useRef, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, Animated } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useApp, ThreatEvent } from '../store/AppContext';
@@ -35,7 +34,7 @@ export default function HistoryScreen() {
   });
 
   return (
-    <LinearGradient colors={['#0d0118', '#160d24']} style={{ flex: 1 }}>
+    <View style={{ flex: 1, backgroundColor: Colors.bg }}>
       <SafeAreaView style={{ flex: 1 }}>
         <Animated.View style={[{ flex: 1 }, { opacity: fadeAnim }]}>
 
@@ -139,7 +138,7 @@ export default function HistoryScreen() {
           </ScrollView>
         </Animated.View>
       </SafeAreaView>
-    </LinearGradient>
+    </View>
   );
 }
 

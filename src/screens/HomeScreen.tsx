@@ -3,7 +3,6 @@ import {
   View, Text, StyleSheet, ScrollView, TouchableOpacity,
   Animated, Alert, Vibration, Image, Platform, Linking,
 } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useApp } from '../store/AppContext';
@@ -36,7 +35,6 @@ export default function HomeScreen() {
   const measuringSound = isMonitoring && !sosActive;
   const countRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const fadeAnim = useRef(new Animated.Value(0)).current;
-  const sosScale = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {
     Animated.timing(fadeAnim, { toValue: 1, duration: 500, useNativeDriver: true }).start();
@@ -45,18 +43,6 @@ export default function HomeScreen() {
   useEffect(() => () => {
     if (countRef.current) clearInterval(countRef.current);
   }, []);
-
-  useEffect(() => {
-    if (sosActive) {
-      const a = Animated.loop(Animated.sequence([
-        Animated.timing(sosScale, { toValue: 1.06, duration: 700, useNativeDriver: true }),
-        Animated.timing(sosScale, { toValue: 1, duration: 700, useNativeDriver: true }),
-      ]));
-      a.start();
-      return () => a.stop();
-    }
-    sosScale.setValue(1);
-  }, [sosActive, sosScale]);
 
   const cancelCountdown = () => {
     if (countRef.current) {
@@ -146,7 +132,7 @@ export default function HomeScreen() {
   const recentIncidents = threatHistory.slice(0, 3);
 
   return (
-    <LinearGradient colors={['#07111f', '#09172a', '#07111f']} style={{ flex: 1 }}>
+    <View style={{ flex: 1, backgroundColor: Colors.bg }}>
       <SafeAreaView style={{ flex: 1 }}>
         <Animated.View style={{ flex: 1, opacity: fadeAnim }}>
           <ScreenHeader
@@ -157,8 +143,8 @@ export default function HomeScreen() {
           />
 
           <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
-            <GlassCard style={styles.heroCard} accentColor={cfg.color}>
-              <LinearGradient colors={['rgba(255,255,255,0.03)', 'rgba(255,255,255,0)']} style={styles.heroPad}>
+            <GlassCard style={styles.heroCard}>
+              <View style={styles.heroPad}>
                 <View style={styles.heroTopRow}>
                   <View style={styles.heroBrand}>
                     <View style={styles.logoWrap}>
@@ -183,8 +169,8 @@ export default function HomeScreen() {
                     accessibilityLabel={sosActive ? 'Остановить локальный режим SOS' : 'Запустить локальный SOS'}
                     accessibilityHint={sosActive ? 'Попросит подтвердить остановку' : 'Запускает трёхсекундный отсчёт'}
                   >
-                    <Animated.View style={{ transform: [{ scale: sosScale }] }}>
-                      <PulseRing color={cfg.ring} size={220} active={isMonitoring || sosActive}>
+                    <View>
+                      <PulseRing color={cfg.ring} size={150} active={false}>
                         {countdown !== null ? (
                           <Text style={styles.countdownNum}>{countdown}</Text>
                         ) : (
@@ -197,7 +183,7 @@ export default function HomeScreen() {
                           </View>
                         )}
                       </PulseRing>
-                    </Animated.View>
+                    </View>
                   </TouchableOpacity>
 
                   {countdown !== null ? (
@@ -221,7 +207,7 @@ export default function HomeScreen() {
                   <MetricCard label="Уровень звука" value={microphoneGranted ? `${soundLevel}%` : '—'} hint={microphoneGranted ? 'микрофон, локально' : 'нужен доступ к микрофону'} icon="pulse-outline" />
                   <MetricCard label="События" value={String(threatHistory.length)} hint="в журнале" icon="time-outline" />
                 </View>
-              </LinearGradient>
+              </View>
             </GlassCard>
 
             <GradientButton
@@ -322,7 +308,7 @@ export default function HomeScreen() {
           </ScrollView>
         </Animated.View>
       </SafeAreaView>
-    </LinearGradient>
+    </View>
   );
 }
 
@@ -414,8 +400,8 @@ const styles = StyleSheet.create({
   liveText: { fontSize: 11, fontWeight: '800', letterSpacing: 0.8 },
   sosSection: { alignItems: 'center', marginBottom: Spacing.lg },
   shieldInner: { alignItems: 'center', gap: 6 },
-  sosLabel: { fontSize: 16, fontWeight: '800', color: Colors.white },
-  sosSubLabel: { fontSize: 11, color: Colors.textMuted, textAlign: 'center', maxWidth: 110, lineHeight: 15 },
+  sosLabel: { fontSize: 15, fontWeight: '700', color: Colors.white },
+  sosSubLabel: { fontSize: 10, color: Colors.textMuted, textAlign: 'center', maxWidth: 116, lineHeight: 14 },
   countdownNum: { fontSize: 56, fontWeight: '900', color: Colors.danger, lineHeight: 62 },
   cancelBtn: {
     marginTop: Spacing.md,
@@ -430,7 +416,7 @@ const styles = StyleSheet.create({
   metricRow: { flexDirection: 'row', gap: 10 },
   metricCard: {
     flex: 1,
-    backgroundColor: 'rgba(255,255,255,0.04)',
+    backgroundColor: Colors.bgCardLight,
     borderRadius: Radius.md,
     borderWidth: 1,
     borderColor: Colors.border,
@@ -444,7 +430,7 @@ const styles = StyleSheet.create({
   quickActionRow: { flexDirection: 'row', gap: 10, marginBottom: Spacing.lg },
   quickAction: {
     flex: 1,
-    backgroundColor: 'rgba(255,255,255,0.04)',
+    backgroundColor: Colors.bgCardLight,
     borderRadius: Radius.md,
     borderWidth: 1,
     borderColor: Colors.border,

@@ -3,7 +3,6 @@ import {
   View, Text, StyleSheet, ScrollView, TouchableOpacity, Linking,
   TextInput, Alert, Animated, Modal, KeyboardAvoidingView, Platform,
 } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useApp, TrustedContact } from '../store/AppContext';
@@ -77,7 +76,7 @@ export default function ContactsScreen() {
   };
 
   return (
-    <LinearGradient colors={['#0d0118', '#160d24']} style={{ flex: 1 }}>
+    <View style={{ flex: 1, backgroundColor: Colors.bg }}>
       <SafeAreaView style={{ flex: 1 }}>
         <Animated.View style={[{ flex: 1 }, { opacity: fadeAnim }]}>
 
@@ -223,7 +222,7 @@ export default function ContactsScreen() {
           </View>
         </KeyboardAvoidingView>
       </Modal>
-    </LinearGradient>
+    </View>
   );
 }
 
@@ -254,9 +253,9 @@ const styles = StyleSheet.create({
   relTag: { alignSelf: 'flex-start', borderRadius: Radius.full, paddingHorizontal: 10, paddingVertical: 3, marginTop: 5 },
   relText: { fontSize: 11, fontWeight: '600' },
   actionBtn: { width: 36, height: 36, borderRadius: 18, alignItems: 'center', justifyContent: 'center' },
-  modalWrap: { flex: 1, justifyContent: 'flex-end', backgroundColor: 'rgba(0,0,0,0.65)' },
+  modalWrap: { flex: 1, justifyContent: 'flex-end', backgroundColor: 'rgba(20,24,30,0.35)' },
   sheet: {
-    backgroundColor: '#160d24', borderTopLeftRadius: 28, borderTopRightRadius: 28,
+    backgroundColor: Colors.bgElevated, borderTopLeftRadius: Radius.lg, borderTopRightRadius: Radius.lg,
     padding: Spacing.lg, paddingBottom: 40, borderTopWidth: 1, borderColor: Colors.border,
   },
   handle: { width: 40, height: 4, backgroundColor: Colors.border, borderRadius: 999, alignSelf: 'center', marginBottom: Spacing.lg },

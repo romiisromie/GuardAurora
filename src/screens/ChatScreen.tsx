@@ -3,7 +3,6 @@ import {
   View, Text, StyleSheet, ScrollView, TextInput,
   TouchableOpacity, Animated, KeyboardAvoidingView, Platform, Image,
 } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useApp } from '../store/AppContext';
@@ -74,7 +73,7 @@ export default function ChatScreen() {
   };
 
   return (
-    <LinearGradient colors={['#0c0517', '#1a1030']} style={{ flex: 1 }}>
+    <View style={{ flex: 1, backgroundColor: Colors.bg }}>
       <SafeAreaView style={{ flex: 1 }}>
         <KeyboardAvoidingView
           style={{ flex: 1 }}
@@ -167,16 +166,16 @@ export default function ChatScreen() {
                 disabled={!input.trim() || loading}
                 style={[styles.sendBtn, (!input.trim() || loading) && { opacity: 0.35 }]}
               >
-                <LinearGradient colors={Colors.gradPrimary} style={styles.sendGrad}>
+                <View style={styles.sendGrad}>
                   <Ionicons name="send" size={17} color="#fff" />
-                </LinearGradient>
+                </View>
               </TouchableOpacity>
             </View>
 
           </Animated.View>
         </KeyboardAvoidingView>
       </SafeAreaView>
-    </LinearGradient>
+    </View>
   );
 }
 
@@ -240,7 +239,7 @@ const styles = StyleSheet.create({
     alignItems: 'center', justifyContent: 'center',
   },
   bubble: { maxWidth: '78%', borderRadius: 18, padding: Spacing.md },
-  bubbleUser: { backgroundColor: '#6d3fe3', borderBottomRightRadius: 4 },
+  bubbleUser: { backgroundColor: Colors.lavender, borderBottomRightRadius: 4 },
   bubbleAI: { backgroundColor: Colors.bgCardLight, borderBottomLeftRadius: 4, borderWidth: 1, borderColor: Colors.border },
   bubbleText: { fontSize: 15, lineHeight: 22 },
   textUser: { color: Colors.white },
@@ -267,5 +266,5 @@ const styles = StyleSheet.create({
     fontSize: 15, color: Colors.white, maxHeight: 120,
   },
   sendBtn: { width: 46, height: 46 },
-  sendGrad: { width: 46, height: 46, borderRadius: 23, alignItems: 'center', justifyContent: 'center' },
+  sendGrad: { width: 46, height: 46, borderRadius: Radius.md, backgroundColor: Colors.lavender, alignItems: 'center', justifyContent: 'center' },
 });
