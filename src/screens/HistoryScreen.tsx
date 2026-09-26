@@ -16,9 +16,9 @@ const LEVEL_COLOR = { low: Colors.mint, medium: Colors.warning, high: Colors.dan
 const LEVEL_LABEL = { low: 'Низкий', medium: 'Средний', high: 'Высокий' };
 
 const TIPS = [
-  { icon: '📳', t: 'Тихий SOS', d: 'Встряхни телефон 3 раза — контакты получат сигнал без звука' },
-  { icon: '🔋', t: 'Заряд батареи', d: 'Держи телефон заряженным на 50%+ для надёжной защиты' },
-  { icon: '📡', t: 'Интернет', d: 'Для GPS и ИИ-чата нужен мобильный интернет' },
+  { icon: '📳', t: 'Тихий SOS', d: 'Встряхивание отмечает SOS локально; контакты и службы не получают уведомления' },
+  { icon: '🔋', t: 'Заряд батареи', d: 'Следи за зарядом, чтобы телефон оставался доступен для звонков' },
+  { icon: '📡', t: 'Интернет', d: 'Координаты запрашиваются у системы геолокации; чат отвечает локально' },
   { icon: '👥', t: 'Контакты', d: 'Добавь 2–3 доверенных человека с разными операторами' },
 ];
 
@@ -71,7 +71,7 @@ export default function HistoryScreen() {
                   <Text style={{ fontSize: 26 }}>👁️</Text>
                   <View style={{ flex: 1 }}>
                     <Text style={styles.sessionTitle}>Сессия мониторинга активна</Text>
-                    <Text style={styles.sessionSub}>ИИ анализирует звуки окружения</Text>
+                    <Text style={styles.sessionSub}>Локально измеряется уровень звука; угрозы не распознаются</Text>
                   </View>
                   <StatusBadge label="Активно" color={Colors.lavender} />
                 </View>

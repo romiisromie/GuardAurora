@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import {
-  View, Text, StyleSheet, ScrollView, TouchableOpacity,
+  View, Text, StyleSheet, ScrollView, TouchableOpacity, Linking,
   TextInput, Alert, Animated, Modal, KeyboardAvoidingView, Platform,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -40,6 +40,11 @@ export default function ContactsScreen() {
       Alert.alert('Ошибка', 'Заполни имя и номер телефона');
       return;
     }
+    const digits = phone.replace(/\D/g, '');
+    if (digits.length < 7 || digits.length > 15) {
+      Alert.alert('Проверьте номер', 'Введите номер телефона, содержащий от 7 до 15 цифр.');
+      return;
+    }
     addContact({ id: Date.now().toString(), name: name.trim(), phone: phone.trim(), relation, avatar });
     setModalOpen(false);
   };
@@ -59,7 +64,7 @@ export default function ContactsScreen() {
           <ScreenHeader
             eyebrow="Trusted Circle"
             title="Доверенные лица"
-            subtitle="Получат SOS-сообщение, координаты и ссылку на маршрут."
+            subtitle="Сохранены только на этом устройстве. Свяжитесь с ними вручную."
             right={
               <TouchableOpacity style={styles.addBtn} onPress={openModal}>
                 <Ionicons name="add" size={22} color={Colors.white} />
@@ -88,7 +93,7 @@ export default function ContactsScreen() {
                 <Text style={{ fontSize: 28 }}>📱</Text>
                 <View style={{ flex: 1 }}>
                   <Text style={styles.bannerTitle}>При активации SOS</Text>
-                  <Text style={styles.bannerDesc}>Все контакты получат уведомление с вашим именем, GPS-ссылкой и аудиозаписью</Text>
+                  <Text style={styles.bannerDesc}>SOS не отправляет уведомления. Позвоните контакту вручную из его карточки.</Text>
                 </View>
               </View>
             </GlassCard>
@@ -99,7 +104,7 @@ export default function ContactsScreen() {
               <View style={styles.empty}>
                 <Text style={{ fontSize: 60 }}>👥</Text>
                 <Text style={styles.emptyTitle}>Нет контактов</Text>
-                <Text style={styles.emptyDesc}>Добавь доверенных людей, которые получат сигнал SOS</Text>
+                <Text style={styles.emptyDesc}>Добавьте людей, которым сможете позвонить вручную. Автоматические SOS-сообщения не отправляются.</Text>
               </View>
             ) : (
               trustedContacts.map(c => {
@@ -118,7 +123,11 @@ export default function ContactsScreen() {
                         </View>
                       </View>
                       <View style={{ gap: 8 }}>
-                        <TouchableOpacity style={[styles.actionBtn, { backgroundColor: Colors.mintGlow }]}>
+                        <TouchableOpacity
+                          style={[styles.actionBtn, { backgroundColor: Colors.mintGlow }]}
+                          accessibilityLabel={`Позвонить ${c.name}`}
+                          onPress={() => Linking.openURL(`tel:${c.phone}`).catch(() => Alert.alert('Ошибка', 'Не удалось открыть приложение телефона.'))}
+                        >
                           <Ionicons name="call" size={17} color={Colors.mint} />
                         </TouchableOpacity>
                         <TouchableOpacity style={[styles.actionBtn, { backgroundColor: Colors.roseGlow }]} onPress={() => handleRemove(c)}>

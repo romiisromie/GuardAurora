@@ -1,6 +1,8 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
+import { Alert } from 'react-native';
 import * as Location from 'expo-location';
 import { useApp } from '../store/AppContext';
+import { captureException } from '../lib/monitoring';
 
 export function useLocation() {
   const { isMonitoring, sosActive, updateLocation } = useApp();
@@ -8,10 +10,22 @@ export function useLocation() {
   const watchRef = useRef<Location.LocationSubscription | null>(null);
 
   const requestPermission = useCallback(async () => {
-    const { status } = await Location.requestForegroundPermissionsAsync();
-    const ok = status === 'granted';
-    setHasPermission(ok);
-    return ok;
+    try {
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      const ok = status === 'granted';
+      setHasPermission(ok);
+      if (!ok) {
+        Alert.alert(
+          'Нет доступа к геолокации',
+          'Координаты не будут определяться. Разрешите геолокацию в настройках, если хотите видеть местоположение на карте.',
+        );
+      }
+      return ok;
+    } catch (e) {
+      captureException(e, 'location-permission');
+      Alert.alert('Не удалось запросить геолокацию', 'Проверьте системные настройки разрешений и попробуйте снова.');
+      return false;
+    }
   }, []);
 
   const startTracking = useCallback(async () => {
@@ -28,10 +42,11 @@ export function useLocation() {
           longitude: loc.coords.longitude,
           accuracy: loc.coords.accuracy ?? 0,
           timestamp: loc.timestamp,
-        })
+        }),
       );
     } catch (e) {
-      console.warn('Location tracking error:', e);
+      captureException(e, 'location-tracking');
+      Alert.alert('Геолокация недоступна', 'Не удалось начать обновление координат. Проверьте разрешение и настройки геолокации.');
     }
   }, [hasPermission, requestPermission, updateLocation]);
 
@@ -56,7 +71,12 @@ export function useLocation() {
       };
       updateLocation(data);
       return data;
-    } catch {
+    } catch (e) {
+      captureException(e, 'location-current');
+      Alert.alert(
+        'Не удалось определить местоположение',
+        'Проверьте, что GPS включён и есть сигнал. Повторите попытку на открытом месте.',
+      );
       return null;
     }
   }, [hasPermission, requestPermission, updateLocation]);

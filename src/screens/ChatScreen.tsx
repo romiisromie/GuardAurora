@@ -9,6 +9,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useApp } from '../store/AppContext';
 import { SectionTitle } from '../components/ui';
 import { Colors, Spacing, Radius } from '../theme';
+import { localAssistantReply } from '../lib/localChat';
 
 const LOGO = require('../../assets/logo.png');
 
@@ -22,27 +23,17 @@ interface Msg {
 const QUICK = [
   'Я чувствую угрозу',
   'Как использовать SOS?',
-  'Нужен безопасный маршрут',
+  'Что показывает карта?',
   'Как успокоиться?',
   'Меня преследуют — что делать?',
 ];
-
-const SYSTEM = `Ты — GuardAurora AI, заботливый помощник безопасности в мобильном приложении для защиты детей и девушек.
-
-Функции GuardAurora:
-- SOS кнопка: нажать в центре экрана (отсчёт 3 сек до активации)
-- Тихий SOS: встряхнуть телефон 3 раза быстро
-- Мониторинг: кнопка «Включить мониторинг» — ИИ слушает окружение
-- Карта: вкладка «Карта» — найти безопасный маршрут и ближайшую помощь
-
-Отвечай только по-русски. Будь краток, тёпл, поддерживающим. В экстренных ситуациях — сразу конкретные шаги.`;
 
 export default function ChatScreen() {
   const insets = useSafeAreaInsets();
   const { status, isMonitoring, trustedContacts } = useApp();
   const [messages, setMessages] = useState<Msg[]>([{
     id: '0', role: 'assistant', ts: Date.now(),
-    text: 'Привет! Я GuardAurora AI — твой помощник по безопасности 🛡️\n\nЯ помогу тебе разобраться с приложением, поддержу в трудной ситуации и дам инструкции при угрозе.\n\nО чём хочешь спросить?',
+    text: 'Привет! Я локальный помощник GuardAurora 🛡️\n\nМогу объяснить, как работают функции приложения. Ответы подготовлены заранее и формируются на устройстве.\n\nО чём хочешь спросить?',
   }]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
@@ -65,30 +56,12 @@ export default function ChatScreen() {
     setLoading(true);
 
     try {
-      const ctx = `Статус: ${status}, мониторинг: ${isMonitoring}, контактов: ${trustedContacts.length}`;
-      const apiMessages = [
-        ...messages
-          .filter(m => !(m.role === 'assistant' && m.id === '0'))
-          .map(m => ({ role: m.role, content: m.text })),
-        { role: 'user', content: text.trim() },
-      ];
-      const res = await fetch('https://api.anthropic.com/v1/messages', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          model: 'claude-sonnet-4-20250514',
-          max_tokens: 1000,
-          system: SYSTEM + '\n\nКонтекст: ' + ctx,
-          messages: apiMessages,
-        }),
-      });
-      const data = await res.json();
-      const reply = data?.content?.[0]?.text ?? 'Не удалось получить ответ. Если ты в опасности — используй кнопку SOS.';
+      const reply = localAssistantReply(text.trim());
       setMessages(p => [...p, { id: (Date.now() + 1).toString(), role: 'assistant', text: reply, ts: Date.now() }]);
     } catch {
       setMessages(p => [...p, {
         id: (Date.now() + 1).toString(), role: 'assistant', ts: Date.now(),
-        text: 'Нет интернета. При угрозе — нажми SOS или встряхни телефон 3 раза.',
+        text: 'Не удалось подготовить ответ. При непосредственной опасности позвони в местную экстренную службу.',
       }]);
     } finally {
       setLoading(false);
@@ -116,11 +89,11 @@ export default function ChatScreen() {
                 <Image source={LOGO} style={styles.aiAvatar} resizeMode="contain" />
               </View>
               <View style={{ flex: 1 }}>
-                <Text style={styles.headerEyebrow}>ИИ-помощник</Text>
-                <Text style={styles.headerTitle}>GuardAurora AI</Text>
+                <Text style={styles.headerEyebrow}>Локальный помощник</Text>
+                <Text style={styles.headerTitle}>GuardAurora</Text>
                 <View style={styles.onlineRow}>
                   <View style={styles.onlineDot} />
-                  <Text style={styles.onlineText}>Всегда готов помочь</Text>
+                  <Text style={styles.onlineText}>Локальные ответы · без отправки данных</Text>
                 </View>
               </View>
             </View>

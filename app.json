@@ -16,9 +16,8 @@
       "supportsTablet": false,
       "bundleIdentifier": "com.guardaurora.app",
       "infoPlist": {
-        "NSMicrophoneUsageDescription": "GuardAurora использует микрофон для обнаружения угроз.",
-        "NSLocationWhenInUseUsageDescription": "GuardAurora использует геолокацию для передачи вашего местоположения.",
-        "NSLocationAlwaysAndWhenInUseUsageDescription": "GuardAurora использует фоновую геолокацию для вашей защиты."
+        "NSMicrophoneUsageDescription": "GuardAurora использует микрофон для локального измерения уровня звука при включённом мониторинге.",
+        "NSLocationWhenInUseUsageDescription": "GuardAurora использует геолокацию для отображения координат при запросе и во время мониторинга."
       }
     },
     "android": {
@@ -31,7 +30,8 @@
         "android.permission.RECORD_AUDIO",
         "android.permission.ACCESS_FINE_LOCATION",
         "android.permission.ACCESS_COARSE_LOCATION",
-        "android.permission.VIBRATE"
+        "android.permission.VIBRATE",
+        "android.permission.MODIFY_AUDIO_SETTINGS"
       ]
     },
     "web": {
@@ -40,17 +40,21 @@
     "plugins": [
       [
         "expo-av",
-        {
-          "microphonePermission": "Разрешить GuardAurora использовать микрофон."
-        }
+        { "microphonePermission": "Разрешить GuardAurora использовать микрофон во время включённого мониторинга." }
       ],
       [
         "expo-location",
-        {
-          "locationAlwaysAndWhenInUsePermission": "Разрешить GuardAurora использовать геолокацию."
-        }
+        { "locationWhenInUsePermission": "Разрешить GuardAurora определять координаты при использовании приложения." }
       ],
       "expo-font"
-    ]
+    ],
+    "extra": {
+      "privacyPolicyUrl": "",
+      "supportEmail": "",
+      "sentryDsn": "",
+      "eas": {
+        "projectId": "fae08a2d-7242-49e3-b95d-eaddd915629c"
+      }
+    }
   }
 }
