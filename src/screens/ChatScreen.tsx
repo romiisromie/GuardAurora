@@ -11,7 +11,7 @@ import { Colors, Spacing, Radius } from '../theme';
 import { localAssistantReply } from '../lib/localChat';
 import { useLanguage } from '../i18n';
 
-const LOGO = require('../../assets/guardaurora-mark.png');
+const LOGO = require('../../assets/guardaurora-symbol.png');
 
 interface Msg {
   id: string;

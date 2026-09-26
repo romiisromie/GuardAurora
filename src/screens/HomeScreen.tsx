@@ -21,7 +21,7 @@ import {
 import { Colors, Spacing, Radius } from '../theme';
 import { useLanguage } from '../i18n';
 
-const LOGO = require('../../assets/guardaurora-mark.png');
+const LOGO = require('../../assets/guardaurora-symbol.png');
 
 export default function HomeScreen() {
   const { t, locale } = useLanguage();
@@ -147,7 +147,7 @@ export default function HomeScreen() {
           <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
             <View style={styles.brandBanner}>
               <View style={styles.brandBannerIcon}>
-                <Ionicons name="shield-checkmark" size={23} color="#FFFFFF" />
+                <Image source={LOGO} style={styles.brandBannerLogo} resizeMode="contain" />
               </View>
               <View style={{ flex: 1 }}>
                 <Text style={styles.brandBannerTitle}>{t('План действий — под рукой')}</Text>
@@ -386,6 +386,7 @@ const styles = StyleSheet.create({
     width: 46, height: 46, borderRadius: Radius.md,
     backgroundColor: 'rgba(255,255,255,0.16)', alignItems: 'center', justifyContent: 'center',
   },
+  brandBannerLogo: { width: 36, height: 36 },
   brandBannerTitle: { fontSize: 17, fontWeight: '700', color: '#FFFFFF' },
   brandBannerText: { fontSize: 13, color: 'rgba(255,255,255,0.88)', lineHeight: 18, marginTop: 4 },
   heroCard: { marginBottom: Spacing.lg },
