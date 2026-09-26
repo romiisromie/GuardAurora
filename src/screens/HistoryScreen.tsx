@@ -1,14 +1,14 @@
 import React, { useRef, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, Animated } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useApp, ThreatEvent } from '../store/AppContext';
 import { GlassCard, StatusBadge, ScreenHeader, SectionTitle } from '../components/ui';
 import { Colors, Spacing, Radius } from '../theme';
+import { useLanguage } from '../i18n';
 
 const EVENT_CFG = {
-  sound:  { icon: '🎙', label: 'Звуковая угроза', color: Colors.warning },
+  sound:  { icon: '🎙', label: 'Измерение звука', color: Colors.warning },
   manual: { icon: '🚨', label: 'Ручной SOS',      color: Colors.danger },
   shake:  { icon: '📳', label: 'Тихий SOS',        color: Colors.rose },
 };
@@ -16,7 +16,7 @@ const LEVEL_COLOR = { low: Colors.mint, medium: Colors.warning, high: Colors.dan
 const LEVEL_LABEL = { low: 'Низкий', medium: 'Средний', high: 'Высокий' };
 
 const TIPS = [
-  { icon: '📳', t: 'Тихий SOS', d: 'Встряхивание отмечает SOS локально; контакты и службы не получают уведомления' },
+  { icon: '📳', t: 'Тихий SOS', d: 'Три быстрых встряхивания при включённом мониторинге отмечают событие локально; контакты и службы не получают уведомления' },
   { icon: '🔋', t: 'Заряд батареи', d: 'Следи за зарядом, чтобы телефон оставался доступен для звонков' },
   { icon: '📡', t: 'Интернет', d: 'Координаты запрашиваются у системы геолокации; чат отвечает локально' },
   { icon: '👥', t: 'Контакты', d: 'Добавь 2–3 доверенных человека с разными операторами' },
@@ -24,25 +24,26 @@ const TIPS = [
 
 export default function HistoryScreen() {
   const { threatHistory, isMonitoring, trustedContacts } = useApp();
+  const { t, locale } = useLanguage();
   const fadeAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     Animated.timing(fadeAnim, { toValue: 1, duration: 600, useNativeDriver: true }).start();
   }, []);
 
-  const fmt = (ts: number) => new Date(ts).toLocaleString('ru-RU', {
+  const fmt = (ts: number) => new Date(ts).toLocaleString(locale, {
     day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit',
   });
 
   return (
-    <LinearGradient colors={['#0d0118', '#160d24']} style={{ flex: 1 }}>
+    <View style={{ flex: 1, backgroundColor: Colors.bg }}>
       <SafeAreaView style={{ flex: 1 }}>
         <Animated.View style={[{ flex: 1 }, { opacity: fadeAnim }]}>
 
           <ScreenHeader
-            eyebrow="Incident Timeline"
-            title="Журнал событий"
-            subtitle={`${threatHistory.length} записей в истории защиты`}
+            eyebrow={t('История защиты')}
+            title={t('Журнал событий')}
+            subtitle={`${threatHistory.length} ${t('записей в истории защиты')}`}
           />
 
           <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
@@ -50,9 +51,9 @@ export default function HistoryScreen() {
             {/* Stats */}
             <View style={styles.statsRow}>
               {[
-                { num: threatHistory.filter(e => e.type === 'manual').length, label: 'SOS', icon: '🚨', color: Colors.rose },
-                { num: threatHistory.filter(e => e.level === 'high').length, label: 'Угрозы', icon: '⚠️', color: Colors.warning },
-                { num: trustedContacts.length, label: 'Контакты', icon: '👥', color: Colors.mint },
+                { num: threatHistory.filter(e => e.type === 'manual').length, label: t('SOS'), icon: '🚨', color: Colors.rose },
+                { num: threatHistory.filter(e => e.level === 'high').length, label: t('Сигналы SOS'), icon: '⚠️', color: Colors.warning },
+                { num: trustedContacts.length, label: t('Контакты'), icon: '👥', color: Colors.mint },
               ].map((s, i) => (
                 <GlassCard key={i} style={styles.statCard} accentColor={s.color}>
                   <View style={styles.statInner}>
@@ -70,10 +71,10 @@ export default function HistoryScreen() {
                 <View style={styles.sessionRow}>
                   <Text style={{ fontSize: 26 }}>👁️</Text>
                   <View style={{ flex: 1 }}>
-                    <Text style={styles.sessionTitle}>Сессия мониторинга активна</Text>
-                    <Text style={styles.sessionSub}>Локально измеряется уровень звука; угрозы не распознаются</Text>
+                    <Text style={styles.sessionTitle}>{t('Сессия мониторинга активна')}</Text>
+                    <Text style={styles.sessionSub}>{t('Локально измеряется уровень звука; угрозы не распознаются')}</Text>
                   </View>
-                  <StatusBadge label="Активно" color={Colors.lavender} />
+                  <StatusBadge label={t('Активно')} color={Colors.lavender} />
                 </View>
               </GlassCard>
             )}
@@ -82,14 +83,14 @@ export default function HistoryScreen() {
             {threatHistory.length === 0 ? (
               <View style={styles.empty}>
                 <Text style={{ fontSize: 60 }}>📋</Text>
-                <Text style={styles.emptyTitle}>Журнал пуст</Text>
+                <Text style={styles.emptyTitle}>{t('Журнал пуст')}</Text>
                 <Text style={styles.emptyDesc}>
-                  Здесь появятся SOS-сигналы, обнаруженные угрозы и сессии мониторинга
+                  {t('Здесь появятся локальные сигналы SOS. Автоматического распознавания угроз нет.')}
                 </Text>
               </View>
             ) : (
               <>
-                <SectionTitle label="Последние события" />
+                <SectionTitle label={t('Последние события')} />
                 {threatHistory.map(e => {
                   const cfg = EVENT_CFG[e.type];
                   return (
@@ -99,19 +100,19 @@ export default function HistoryScreen() {
                           <Text style={{ fontSize: 22 }}>{cfg.icon}</Text>
                         </View>
                         <View style={{ flex: 1 }}>
-                          <Text style={styles.eventTitle}>{cfg.label}</Text>
+                          <Text style={styles.eventTitle}>{t(cfg.label)}</Text>
                           <Text style={styles.eventTime}>{fmt(e.timestamp)}</Text>
                         </View>
                         <View style={{ alignItems: 'flex-end', gap: 4 }}>
                           <View style={[styles.levelTag, { backgroundColor: `${LEVEL_COLOR[e.level]}18` }]}>
                             <Text style={[styles.levelText, { color: LEVEL_COLOR[e.level] }]}>
-                              {LEVEL_LABEL[e.level]}
+                              {t(LEVEL_LABEL[e.level])}
                             </Text>
                           </View>
                           {e.resolved && (
                             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3 }}>
                               <Ionicons name="checkmark-circle" size={13} color={Colors.mint} />
-                              <Text style={{ fontSize: 10, color: Colors.mint }}>Снято</Text>
+                              <Text style={{ fontSize: 10, color: Colors.mint }}>{t('Снято')}</Text>
                             </View>
                           )}
                         </View>
@@ -123,14 +124,14 @@ export default function HistoryScreen() {
             )}
 
             {/* Tips */}
-            <SectionTitle label="Советы безопасности" />
+            <SectionTitle label={t('Советы безопасности')} />
             {TIPS.map((tip, i) => (
               <GlassCard key={i} style={styles.tipCard}>
                 <View style={styles.tipRow}>
                   <Text style={{ fontSize: 22 }}>{tip.icon}</Text>
                   <View style={{ flex: 1 }}>
-                    <Text style={styles.tipTitle}>{tip.t}</Text>
-                    <Text style={styles.tipDesc}>{tip.d}</Text>
+                    <Text style={styles.tipTitle}>{t(tip.t)}</Text>
+                    <Text style={styles.tipDesc}>{t(tip.d)}</Text>
                   </View>
                 </View>
               </GlassCard>
@@ -139,7 +140,7 @@ export default function HistoryScreen() {
           </ScrollView>
         </Animated.View>
       </SafeAreaView>
-    </LinearGradient>
+    </View>
   );
 }
 

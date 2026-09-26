@@ -1,14 +1,12 @@
 import React, { useEffect, useRef, useState } from 'react';
 import {
   View, Text, StyleSheet, ScrollView, TouchableOpacity,
-  Animated, Alert, Vibration, Image, Platform,
+  Animated, Alert, Vibration, Image, Platform, Linking,
 } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useApp } from '../store/AppContext';
 import { useAudioMonitor } from '../hooks/useAudioMonitor';
-import { useLocation } from '../hooks/useLocation';
 import { useShakeDetector } from '../hooks/useShakeDetector';
 import {
   GlassCard,
@@ -21,39 +19,32 @@ import {
   SectionTitle,
 } from '../components/ui';
 import { Colors, Spacing, Radius } from '../theme';
+import { useLanguage } from '../i18n';
 
-const LOGO = require('../../assets/logo.png');
+const LOGO = require('../../assets/guardaurora-mark.png');
 
 export default function HomeScreen() {
+  const { t, locale } = useLanguage();
   const {
     status, isMonitoring, sosActive, soundLevel,
     trustedContacts, threatHistory, toggleMonitoring, activateSOS, deactivateSOS,
   } = useApp();
 
-  const { requestPermission } = useAudioMonitor();
-  const { requestPermission: requestLocation } = useLocation();
+  const { hasPermission: microphoneGranted, requestPermission } = useAudioMonitor();
   useShakeDetector();
 
   const [countdown, setCountdown] = useState<number | null>(null);
+  const measuringSound = isMonitoring && !sosActive;
   const countRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const fadeAnim = useRef(new Animated.Value(0)).current;
-  const sosScale = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {
     Animated.timing(fadeAnim, { toValue: 1, duration: 500, useNativeDriver: true }).start();
   }, []);
 
-  useEffect(() => {
-    if (sosActive) {
-      const a = Animated.loop(Animated.sequence([
-        Animated.timing(sosScale, { toValue: 1.06, duration: 700, useNativeDriver: true }),
-        Animated.timing(sosScale, { toValue: 1, duration: 700, useNativeDriver: true }),
-      ]));
-      a.start();
-      return () => a.stop();
-    }
-    sosScale.setValue(1);
-  }, [sosActive, sosScale]);
+  useEffect(() => () => {
+    if (countRef.current) clearInterval(countRef.current);
+  }, []);
 
   const cancelCountdown = () => {
     if (countRef.current) {
@@ -65,12 +56,14 @@ export default function HomeScreen() {
 
   const handleSOS = () => {
     if (sosActive) {
-      Alert.alert('Остановить SOS?', 'Локальный режим SOS будет выключен.', [
-        { text: 'Отмена', style: 'cancel' },
-        { text: 'Остановить', style: 'destructive', onPress: deactivateSOS },
+      Alert.alert(t('Остановить SOS?'), t('Локальный режим SOS будет выключен.'), [
+        { text: t('Отмена'), style: 'cancel' },
+        { text: t('Остановить'), style: 'destructive', onPress: deactivateSOS },
       ]);
       return;
     }
+
+    if (countRef.current) return;
 
     setCountdown(3);
     let c = 3;
@@ -92,38 +85,48 @@ export default function HomeScreen() {
 
   const handleToggleMonitor = async () => {
     if (!isMonitoring) {
-      const microphoneGranted = await requestPermission();
-      if (!microphoneGranted) return;
-      const locationGranted = await requestLocation();
-      if (!locationGranted) return;
+      // Shake SOS remains available even when optional microphone access is declined.
+      await requestPermission();
     }
     toggleMonitoring();
   };
 
+  const callTrustedContact = async () => {
+    const contact = trustedContacts[0];
+    if (!contact) return;
+    try {
+      await Linking.openURL(`tel:${contact.phone}`);
+    } catch {
+      Alert.alert(t('Звонок недоступен'), t('Не удалось открыть приложение телефона.'));
+    }
+  };
+
   const statusCfg = {
     safe: {
-      label: 'Готовность',
+      label: t('Готовность'),
       color: Colors.mint,
       ring: Colors.mint,
-      summary: 'Можно включить локальный мониторинг, отметить SOS и позвонить контакту вручную.',
+      summary: t('Можно включить локальный мониторинг, отметить SOS и позвонить контакту вручную.'),
     },
     monitoring: {
-      label: 'Мониторинг включён',
+      label: t('Мониторинг включён'),
       color: Colors.lavender,
       ring: Colors.lavender,
-      summary: 'Пока приложение открыто, локально измеряется уровень звука и обновляются координаты.',
+      summary: microphoneGranted
+        ? t('Пока приложение открыто, локально измеряется общий уровень звука. Геолокация — только по запросу.')
+        : t('Мониторинг включён без доступа к микрофону. Тихий SOS работает при открытом приложении; координаты — по запросу.'),
     },
     alert: {
-      label: 'Обнаружен риск',
+      label: t('Обнаружен риск'),
       color: Colors.warning,
       ring: Colors.warning,
-      summary: 'Высокий уровень звука обнаружен локальным измерителем. Это не определение угрозы.',
+      summary: t('Высокий уровень звука обнаружен локальным измерителем. Это не определение угрозы.'),
     },
     sos: {
-      label: 'Экстренный режим',
+      label: t('Экстренный режим'),
       color: Colors.danger,
       ring: Colors.danger,
-      summary: 'SOS-событие записано в журнале на устройстве. Контакты и службы не уведомляются.',
+      summary: t('SOS-событие записано в журнале на устройстве. Контакты и службы не уведомляются.'),
     },
   } as const;
 
@@ -131,71 +134,96 @@ export default function HomeScreen() {
   const recentIncidents = threatHistory.slice(0, 3);
 
   return (
-    <LinearGradient colors={['#07111f', '#09172a', '#07111f']} style={{ flex: 1 }}>
+    <View style={{ flex: 1, backgroundColor: Colors.bg }}>
       <SafeAreaView style={{ flex: 1 }}>
         <Animated.View style={{ flex: 1, opacity: fadeAnim }}>
           <ScreenHeader
-            eyebrow="Центр безопасности"
+            eyebrow={t('Центр безопасности')}
             title="GuardAurora"
             subtitle={cfg.summary}
             right={<StatusBadge label={cfg.label} color={cfg.color} />}
           />
 
           <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
-            <GlassCard style={styles.heroCard} accentColor={cfg.color}>
-              <LinearGradient colors={['rgba(255,255,255,0.03)', 'rgba(255,255,255,0)']} style={styles.heroPad}>
+            <View style={styles.brandBanner}>
+              <View style={styles.brandBannerIcon}>
+                <Ionicons name="shield-checkmark" size={23} color="#FFFFFF" />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.brandBannerTitle}>{t('План действий — под рукой')}</Text>
+                <Text style={styles.brandBannerText}>{t('Контакты, координаты и локальный сигнал SOS в одном месте.')}</Text>
+              </View>
+            </View>
+
+            <GlassCard style={styles.heroCard}>
+              <View style={styles.heroPad}>
                 <View style={styles.heroTopRow}>
                   <View style={styles.heroBrand}>
                     <View style={styles.logoWrap}>
                       <Image source={LOGO} style={styles.logo} resizeMode="contain" />
                     </View>
                     <View style={{ flex: 1 }}>
-                      <Text style={styles.heroTitle}>Инструменты безопасности</Text>
-                      <Text style={styles.heroSubtitle}>Один тап для SOS, три встряхивания для тихого сигнала.</Text>
+                      <Text style={styles.heroTitle}>{t('Инструменты безопасности')}</Text>
+                      <Text style={styles.heroSubtitle}>{t('Локальный SOS и тихий сигнал по трём встряхиваниям при включённом мониторинге.')}</Text>
                     </View>
                   </View>
                   <View style={[styles.livePill, { borderColor: `${cfg.color}55`, backgroundColor: `${cfg.color}14` }]}>
                     <View style={[styles.liveDot, { backgroundColor: cfg.color }]} />
-                    <Text style={[styles.liveText, { color: cfg.color }]}>АКТИВНО</Text>
+                    <Text style={[styles.liveText, { color: cfg.color }]}>{sosActive ? 'SOS' : isMonitoring ? t('МОНИТОРИНГ') : t('ГОТОВО')}</Text>
                   </View>
                 </View>
 
                 <View style={styles.sosSection}>
-                  <TouchableOpacity onPress={handleSOS} activeOpacity={0.9}>
-                    <Animated.View style={{ transform: [{ scale: sosScale }] }}>
-                      <PulseRing color={cfg.ring} size={220} active={isMonitoring || sosActive}>
+                  <TouchableOpacity
+                    onPress={handleSOS}
+                    activeOpacity={0.9}
+                    accessibilityRole="button"
+                    accessibilityLabel={sosActive ? t('Остановить локальный режим SOS') : t('Запустить локальный SOS')}
+                    accessibilityHint={sosActive ? t('Попросит подтвердить остановку') : t('Запускает трёхсекундный отсчёт')}
+                  >
+                    <View>
+                      <PulseRing color={Colors.danger} size={150} active={false}>
                         {countdown !== null ? (
-                          <Text style={styles.countdownNum}>{countdown}</Text>
+                        <Text style={styles.countdownNum}>{countdown}</Text>
                         ) : (
                           <View style={styles.shieldInner}>
-                            <Ionicons name={sosActive ? 'stop-circle' : 'warning'} size={34} color={cfg.color} />
-                            <Text style={styles.sosLabel}>{sosActive ? 'Остановить SOS' : 'Нажмите для SOS'}</Text>
+                            <Ionicons name={sosActive ? 'stop-circle' : 'warning'} size={30} color="#FFFFFF" />
+                            <Text style={styles.sosLabel}>{sosActive ? t('Остановить SOS') : t('Нажмите для SOS')}</Text>
                             <Text style={styles.sosSubLabel}>
-                              {sosActive ? 'SOS отмечен в журнале на устройстве' : 'SOS не вызывает службы и не отправляет сообщения'}
+                              {sosActive ? t('SOS отмечен в журнале на устройстве') : t('SOS не вызывает службы и не отправляет сообщения')}
                             </Text>
                           </View>
                         )}
                       </PulseRing>
-                    </Animated.View>
+                    </View>
                   </TouchableOpacity>
 
                   {countdown !== null ? (
                     <TouchableOpacity style={styles.cancelBtn} onPress={cancelCountdown}>
-                      <Text style={styles.cancelText}>Отменить запуск</Text>
+                      <Text style={styles.cancelText}>{t('Отменить запуск')}</Text>
                     </TouchableOpacity>
+                  ) : null}
+                  {sosActive && trustedContacts[0] ? (
+                    <GradientButton
+                      label={`${t('Позвонить:')} ${trustedContacts[0].name}`}
+                      onPress={callTrustedContact}
+                      colors={Colors.gradMint}
+                      size="md"
+                      style={{ marginTop: Spacing.md }}
+                    />
                   ) : null}
                 </View>
 
                 <View style={styles.metricRow}>
                   <MetricCard label="Контакты" value={String(trustedContacts.length)} hint="сохранены на устройстве" icon="people-outline" />
-                  <MetricCard label="Уровень звука" value={`${soundLevel}%`} hint="микрофон, локально" icon="pulse-outline" />
+                  <MetricCard label="Уровень звука" value={microphoneGranted ? `${soundLevel}%` : '—'} hint={microphoneGranted ? 'микрофон, локально' : 'нужен доступ к микрофону'} icon="pulse-outline" />
                   <MetricCard label="События" value={String(threatHistory.length)} hint="в журнале" icon="time-outline" />
                 </View>
-              </LinearGradient>
+              </View>
             </GlassCard>
 
             <GradientButton
-              label={isMonitoring ? 'Остановить мониторинг' : 'Запустить мониторинг'}
+              label={isMonitoring ? t('Остановить мониторинг') : t('Запустить мониторинг')}
               onPress={handleToggleMonitor}
               colors={isMonitoring ? Colors.gradDark : Colors.gradPrimary}
               style={styles.primaryAction}
@@ -203,22 +231,24 @@ export default function HomeScreen() {
             />
 
             <View style={styles.quickActionRow}>
-              <QuickAction icon="mic-outline" label={isMonitoring ? 'Микрофон активен' : 'Микрофон выключен'} color={Colors.rose} />
-              <QuickAction icon="navigate-outline" label="GPS готовность" color={Colors.cyan} />
-              <QuickAction icon="flash-outline" label="Тихий SOS" color={Colors.gold} />
+              <QuickAction icon="mic-outline" label={measuringSound ? (microphoneGranted ? t('Звук: локально') : t('Микрофон запрещён')) : t('Звук: выключен')} color={Colors.rose} />
+              <QuickAction icon="navigate-outline" label={t('GPS: по запросу')} color={Colors.cyan} />
+              <QuickAction icon="flash-outline" label={isMonitoring ? t('Тихий SOS: готов') : t('Включите мониторинг')} color={Colors.gold} />
             </View>
 
             <GlassCard style={styles.card}>
               <View style={styles.cardPad}>
-                <SectionTitle label="Анализ угрозы" />
+                <SectionTitle label={t('Уровень окружающего звука')} />
                 <ThreatMeter score={soundLevel} />
                 <View style={styles.audioBlock}>
                   <View>
-                    <Text style={styles.cardTitle}>Акустическая обстановка</Text>
+                    <Text style={styles.cardTitle}>{t('Локальный измеритель звука')}</Text>
                     <Text style={styles.cardSub}>
                       {isMonitoring
-                        ? 'Микрофон измеряет общий уровень звука, пока приложение открыто. Распознавания угроз нет.'
-                        : 'При включении измеряется общий уровень звука. Угрозы не распознаются.'}
+                        ? microphoneGranted
+                          ? t('Микрофон измеряет общий уровень звука, пока приложение открыто. Распознавания угроз нет.')
+                          : t('Доступ к микрофону не предоставлен, поэтому уровень звука не измеряется. Тихий SOS доступен отдельно.')
+                        : t('При включении можно разрешить измерение общего уровня звука. Угрозы не распознаются.')}
                     </Text>
                   </View>
                   <SoundWave level={soundLevel} color={Colors.lavender} />
@@ -229,11 +259,11 @@ export default function HomeScreen() {
             <View style={styles.dualRow}>
               <GlassCard style={[styles.sideCard, styles.guidanceCard]}>
                 <View style={styles.cardPad}>
-                  <SectionTitle label="Протокол действий" />
+                <SectionTitle label={t('Протокол действий')} />
                   {[
-                    'Откройте карту и двигайтесь к людному месту.',
-                    'При угрозе удерживайте SOS до окончания отсчёта.',
-                    'Используйте встряхивание телефона для тихого сигнала.',
+                    t('Откройте карты телефона, чтобы найти людное место рядом.'),
+                    t('При угрозе удерживайте SOS до окончания отсчёта.'),
+                    t('Используйте встряхивание телефона для тихого сигнала.'),
                   ].map((item) => (
                     <View key={item} style={styles.bulletRow}>
                       <View style={styles.bullet} />
@@ -245,19 +275,19 @@ export default function HomeScreen() {
 
               <GlassCard style={styles.sideCard}>
                 <View style={styles.cardPad}>
-                  <SectionTitle label="Готовность системы" />
-                  <ReadinessRow label="Доверенные контакты" value={trustedContacts.length > 0 ? 'Настроено' : 'Не настроено'} good={trustedContacts.length > 0} />
-                  <ReadinessRow label="Мониторинг на экране" value={isMonitoring ? 'Включён' : 'Отключен'} good={isMonitoring} />
-                  <ReadinessRow label="Локальная отметка SOS" value={sosActive ? 'Активна' : 'Ожидание'} good />
+                  <SectionTitle label={t('Готовность системы')} />
+                  <ReadinessRow label={t('Доверенные контакты')} value={trustedContacts.length > 0 ? t('Настроено') : t('Не настроено')} good={trustedContacts.length > 0} />
+                  <ReadinessRow label={t('Мониторинг на экране')} value={isMonitoring ? t('Включён') : t('Отключен')} good={isMonitoring} />
+                  <ReadinessRow label={t('Локальная отметка SOS')} value={sosActive ? t('Активна') : t('Ожидание')} good />
                 </View>
               </GlassCard>
             </View>
 
             <GlassCard style={styles.card}>
               <View style={styles.cardPad}>
-                <SectionTitle label="Последняя активность" />
+                <SectionTitle label={t('Последняя активность')} />
                 {recentIncidents.length === 0 ? (
-                  <Text style={styles.emptyText}>Пока событий нет. Это хороший знак: система в режиме готовности.</Text>
+                  <Text style={styles.emptyText}>{t('Пока событий нет. Это хороший знак: система в режиме готовности.')}</Text>
                 ) : (
                   recentIncidents.map((event) => (
                     <View key={event.id} style={styles.eventRow}>
@@ -270,17 +300,17 @@ export default function HomeScreen() {
                       </View>
                       <View style={{ flex: 1 }}>
                         <Text style={styles.eventTitle}>
-                          {event.type === 'manual' ? 'Ручной SOS' : event.type === 'shake' ? 'Тихий SOS' : 'Аудио событие'}
+                          {t(event.type === 'manual' ? 'Ручной SOS' : event.type === 'shake' ? 'Тихий SOS' : 'Измерение звука')}
                         </Text>
                         <Text style={styles.eventMeta}>
-                          {new Date(event.timestamp).toLocaleString('ru-RU', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}
+                          {new Date(event.timestamp).toLocaleString(locale, { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}
                         </Text>
                       </View>
                       <Text style={[
                         styles.eventBadge,
                         { color: event.level === 'high' ? Colors.danger : event.level === 'medium' ? Colors.warning : Colors.mint },
                       ]}>
-                        {event.level.toUpperCase()}
+                        {t(event.level === 'low' ? 'Низкий' : event.level === 'medium' ? 'Средний' : 'Высокий').toUpperCase()}
                       </Text>
                     </View>
                   ))
@@ -290,7 +320,7 @@ export default function HomeScreen() {
           </ScrollView>
         </Animated.View>
       </SafeAreaView>
-    </LinearGradient>
+    </View>
   );
 }
 
@@ -305,12 +335,13 @@ function MetricCard({
   hint: string;
   icon: keyof typeof Ionicons.glyphMap;
 }) {
+  const { t } = useLanguage();
   return (
     <View style={styles.metricCard}>
       <Ionicons name={icon} size={16} color={Colors.textSecondary} />
       <Text style={styles.metricValue}>{value}</Text>
-      <Text style={styles.metricLabel}>{label}</Text>
-      <Text style={styles.metricHint}>{hint}</Text>
+      <Text style={styles.metricLabel}>{t(label)}</Text>
+      <Text style={styles.metricHint}>{t(hint)}</Text>
     </View>
   );
 }
@@ -346,6 +377,17 @@ function ReadinessRow({ label, value, good }: { label: string; value: string; go
 
 const styles = StyleSheet.create({
   scroll: { paddingHorizontal: Spacing.lg, paddingBottom: 130 },
+  brandBanner: {
+    flexDirection: 'row', alignItems: 'center', gap: 14,
+    backgroundColor: '#168253', borderRadius: Radius.lg,
+    paddingHorizontal: Spacing.md, paddingVertical: 18, marginBottom: Spacing.md,
+  },
+  brandBannerIcon: {
+    width: 46, height: 46, borderRadius: Radius.md,
+    backgroundColor: 'rgba(255,255,255,0.16)', alignItems: 'center', justifyContent: 'center',
+  },
+  brandBannerTitle: { fontSize: 17, fontWeight: '700', color: '#FFFFFF' },
+  brandBannerText: { fontSize: 13, color: 'rgba(255,255,255,0.88)', lineHeight: 18, marginTop: 4 },
   heroCard: { marginBottom: Spacing.lg },
   heroPad: { padding: Spacing.lg },
   heroTopRow: {
@@ -382,9 +424,9 @@ const styles = StyleSheet.create({
   liveText: { fontSize: 11, fontWeight: '800', letterSpacing: 0.8 },
   sosSection: { alignItems: 'center', marginBottom: Spacing.lg },
   shieldInner: { alignItems: 'center', gap: 6 },
-  sosLabel: { fontSize: 16, fontWeight: '800', color: Colors.white },
-  sosSubLabel: { fontSize: 11, color: Colors.textMuted, textAlign: 'center', maxWidth: 110, lineHeight: 15 },
-  countdownNum: { fontSize: 56, fontWeight: '900', color: Colors.danger, lineHeight: 62 },
+  sosLabel: { fontSize: 15, fontWeight: '700', color: '#FFFFFF', textAlign: 'center' },
+  sosSubLabel: { fontSize: 10, color: 'rgba(255,255,255,0.9)', textAlign: 'center', maxWidth: 116, lineHeight: 14 },
+  countdownNum: { fontSize: 56, fontWeight: '800', color: '#FFFFFF', lineHeight: 62 },
   cancelBtn: {
     marginTop: Spacing.md,
     borderRadius: Radius.full,
@@ -398,7 +440,7 @@ const styles = StyleSheet.create({
   metricRow: { flexDirection: 'row', gap: 10 },
   metricCard: {
     flex: 1,
-    backgroundColor: 'rgba(255,255,255,0.04)',
+    backgroundColor: Colors.bgCardLight,
     borderRadius: Radius.md,
     borderWidth: 1,
     borderColor: Colors.border,
@@ -412,7 +454,7 @@ const styles = StyleSheet.create({
   quickActionRow: { flexDirection: 'row', gap: 10, marginBottom: Spacing.lg },
   quickAction: {
     flex: 1,
-    backgroundColor: 'rgba(255,255,255,0.04)',
+    backgroundColor: Colors.bgCardLight,
     borderRadius: Radius.md,
     borderWidth: 1,
     borderColor: Colors.border,

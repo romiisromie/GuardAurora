@@ -31,6 +31,31 @@ export interface ThreatEvent {
 
 export type AppStatus = 'safe' | 'monitoring' | 'alert' | 'sos';
 
+function isStoredContact(value: unknown): value is TrustedContact {
+  if (!value || typeof value !== 'object') return false;
+  const item = value as Record<string, unknown>;
+  return typeof item.id === 'string' && typeof item.name === 'string' &&
+    typeof item.phone === 'string' && typeof item.relation === 'string' &&
+    typeof item.avatar === 'string';
+}
+
+function isStoredEvent(value: unknown): value is ThreatEvent {
+  if (!value || typeof value !== 'object') return false;
+  const item = value as Record<string, unknown>;
+  const locationIsValid = item.location === undefined || (
+    !!item.location && typeof item.location === 'object' &&
+    Number.isFinite((item.location as LocationData).latitude) &&
+    Math.abs((item.location as LocationData).latitude) <= 90 &&
+    Number.isFinite((item.location as LocationData).longitude) &&
+    Math.abs((item.location as LocationData).longitude) <= 180 &&
+    Number.isFinite((item.location as LocationData).accuracy) &&
+    Number.isFinite((item.location as LocationData).timestamp)
+  );
+  return typeof item.id === 'string' && Number.isFinite(item.timestamp) &&
+    ['sound', 'manual', 'shake'].includes(String(item.type)) &&
+    ['low', 'medium', 'high'].includes(String(item.level)) && typeof item.resolved === 'boolean' && locationIsValid;
+}
+
 interface AppState {
   status: AppStatus;
   isMonitoring: boolean;
@@ -75,12 +100,30 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     (async () => {
       try {
-        const [rawContacts, rawHistory] = await Promise.all([
+        const [contactsResult, historyResult] = await Promise.allSettled([
           AsyncStorage.getItem(CONTACTS_KEY),
           AsyncStorage.getItem(HISTORY_KEY),
         ]);
-        if (rawContacts) setTrustedContacts(JSON.parse(rawContacts));
-        if (rawHistory) setThreatHistory(JSON.parse(rawHistory));
+        const rawContacts = contactsResult.status === 'fulfilled' ? contactsResult.value : null;
+        const rawHistory = historyResult.status === 'fulfilled' ? historyResult.value : null;
+        if (contactsResult.status === 'rejected') captureException(contactsResult.reason, 'load-contacts');
+        if (historyResult.status === 'rejected') captureException(historyResult.reason, 'load-history');
+        if (rawContacts) {
+          try {
+            const parsed: unknown = JSON.parse(rawContacts);
+            if (Array.isArray(parsed)) setTrustedContacts(parsed.filter(isStoredContact));
+          } catch (error) {
+            captureException(error, 'parse-contacts');
+          }
+        }
+        if (rawHistory) {
+          try {
+            const parsed: unknown = JSON.parse(rawHistory);
+            if (Array.isArray(parsed)) setThreatHistory(parsed.filter(isStoredEvent).slice(0, 50));
+          } catch (error) {
+            captureException(error, 'parse-history');
+          }
+        }
       } catch (e) {
         captureException(e, 'hydrate');
       } finally {
@@ -106,7 +149,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const toggleMonitoring = useCallback(() => {
     setIsMonitoring(p => {
       const next = !p;
-      setStatus(next ? 'monitoring' : 'safe');
+      setStatus(sosActiveRef.current ? 'sos' : next ? 'monitoring' : 'safe');
       return next;
     });
   }, []);
@@ -122,13 +165,18 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       timestamp: Date.now(),
       type: source,
       level: 'high',
+      location: location ?? undefined,
       resolved: false,
     }, ...p]);
-  }, []);
+  }, [location]);
 
   const deactivateSOS = useCallback(() => {
     sosActiveRef.current = false;
     setSosActive(false);
+    setThreatHistory(events => {
+      const latestSOS = events.findIndex(event => (event.type === 'manual' || event.type === 'shake') && !event.resolved);
+      return latestSOS < 0 ? events : events.map((event, index) => index === latestSOS ? { ...event, resolved: true } : event);
+    });
     setIsMonitoring(p => { setStatus(p ? 'monitoring' : 'safe'); return p; });
   }, []);
 
@@ -147,12 +195,13 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const clearLocalData = useCallback(async () => {
-    setTrustedContacts([]);
-    setThreatHistory([]);
     try {
       await AsyncStorage.multiRemove([CONTACTS_KEY, HISTORY_KEY]);
+      setTrustedContacts([]);
+      setThreatHistory([]);
     } catch (e) {
       captureException(e, 'clear-data');
+      throw e;
     }
   }, []);
 

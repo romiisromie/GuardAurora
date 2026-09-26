@@ -1,50 +1,40 @@
 export const Colors = {
-  bg: '#0c0517',
-  bgElevated: '#140a24',
-  bgCard: '#1a1030',
-  bgCardLight: '#22143d',
-  bgGlass: 'rgba(255,255,255,0.06)',
-  backdrop: 'rgba(10,5,18,0.88)',
+  bg: '#F3F7F4',
+  bgElevated: '#FFFFFF',
+  bgCard: '#FFFFFF',
+  bgCardLight: '#EFF5F1',
+  bgGlass: '#EFF5F1',
+  backdrop: '#FFFFFF',
 
-  rose: '#f05f82',
-  roseDark: '#d34066',
-  roseGlow: 'rgba(240,95,130,0.18)',
+  rose: '#D23B50',
+  roseDark: '#B22E42',
+  roseGlow: '#FBEAEC',
+  lavender: '#168253',
+  lavenderDark: '#0E6941',
+  lavenderGlow: '#E4F3E9',
+  mint: '#24845B',
+  mintGlow: '#E6F4EB',
+  gold: '#946300',
+  goldGlow: '#F8F0DD',
+  cyan: '#26749A',
 
-  lavender: '#b284ff',
-  lavenderDark: '#8d55eb',
-  lavenderGlow: 'rgba(178,132,255,0.18)',
+  white: '#1D2721',
+  textSecondary: '#56645B',
+  textMuted: '#748077',
+  border: '#DFE8E1',
+  borderStrong: '#C8D5CB',
+  borderActive: '#168253',
+  danger: '#B83243',
+  dangerGlow: '#FBEAEC',
+  safe: '#24845B',
+  warning: '#946300',
 
-  mint: '#59ddbc',
-  mintGlow: 'rgba(89,221,188,0.16)',
-
-  gold: '#f6c453',
-  goldGlow: 'rgba(246,196,83,0.16)',
-  cyan: '#73c8ff',
-
-  white: '#f5f9ff',
-  textSecondary: 'rgba(245,249,255,0.68)',
-  textMuted: 'rgba(245,249,255,0.42)',
-
-  border: 'rgba(255,255,255,0.08)',
-  borderStrong: 'rgba(255,255,255,0.14)',
-  borderActive: 'rgba(178,132,255,0.42)',
-
-  danger: '#ff4757',
-  dangerGlow: 'rgba(255,71,87,0.2)',
-  safe: '#67e8c4',
-  warning: '#f5c842',
-
-  gradPrimary: ['#8d55eb', '#b284ff'] as [string, string],
-  gradAurora: ['#1a1030', '#0c0517'] as [string, string],
-  gradMint: ['#59ddbc', '#73c8ff'] as [string, string],
-  gradDanger: ['#ff4757', '#f05f82'] as [string, string],
-  gradDark: ['#22143d', '#140a24'] as [string, string],
+  gradPrimary: ['#168253', '#168253'] as [string, string],
+  gradAurora: ['#FFFFFF', '#FFFFFF'] as [string, string],
+  gradMint: ['#24845B', '#24845B'] as [string, string],
+  gradDanger: ['#B83243', '#B83243'] as [string, string],
+  gradDark: ['#59616B', '#59616B'] as [string, string],
 };
 
-export const Spacing = {
-  xs: 4, sm: 8, md: 16, lg: 24, xl: 32, xxl: 48,
-};
-
-export const Radius = {
-  sm: 8, md: 14, lg: 20, xl: 28, full: 999,
-};
+export const Spacing = { xs: 4, sm: 8, md: 16, lg: 24, xl: 32, xxl: 48 };
+export const Radius = { sm: 6, md: 10, lg: 14, xl: 18, full: 999 };

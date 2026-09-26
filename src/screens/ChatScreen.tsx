@@ -3,15 +3,15 @@ import {
   View, Text, StyleSheet, ScrollView, TextInput,
   TouchableOpacity, Animated, KeyboardAvoidingView, Platform, Image,
 } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useApp } from '../store/AppContext';
 import { SectionTitle } from '../components/ui';
 import { Colors, Spacing, Radius } from '../theme';
 import { localAssistantReply } from '../lib/localChat';
+import { useLanguage } from '../i18n';
 
-const LOGO = require('../../assets/logo.png');
+const LOGO = require('../../assets/guardaurora-mark.png');
 
 interface Msg {
   id: string;
@@ -29,6 +29,7 @@ const QUICK = [
 ];
 
 export default function ChatScreen() {
+  const { t, language } = useLanguage();
   const insets = useSafeAreaInsets();
   const { status, isMonitoring, trustedContacts } = useApp();
   const [messages, setMessages] = useState<Msg[]>([{
@@ -48,6 +49,12 @@ export default function ChatScreen() {
     setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 100);
   }, [messages, loading]);
 
+  useEffect(() => {
+    setMessages(current => current.length === 1 && current[0].id === '0'
+      ? [{ ...current[0], text: t('Привет! Я локальный помощник GuardAurora 🛡️\n\nМогу объяснить, как работают функции приложения. Ответы подготовлены заранее и формируются на устройстве.\n\nО чём хочешь спросить?') }]
+      : current);
+  }, [language, t]);
+
   const send = async (text: string) => {
     if (!text.trim() || loading) return;
     const user: Msg = { id: Date.now().toString(), role: 'user', text: text.trim(), ts: Date.now() };
@@ -56,12 +63,12 @@ export default function ChatScreen() {
     setLoading(true);
 
     try {
-      const reply = localAssistantReply(text.trim());
+      const reply = localAssistantReply(text.trim(), t);
       setMessages(p => [...p, { id: (Date.now() + 1).toString(), role: 'assistant', text: reply, ts: Date.now() }]);
     } catch {
       setMessages(p => [...p, {
         id: (Date.now() + 1).toString(), role: 'assistant', ts: Date.now(),
-        text: 'Не удалось подготовить ответ. При непосредственной опасности позвони в местную экстренную службу.',
+        text: t('Не удалось подготовить ответ. При непосредственной опасности позвони в местную экстренную службу.'),
       }]);
     } finally {
       setLoading(false);
@@ -74,7 +81,7 @@ export default function ChatScreen() {
   };
 
   return (
-    <LinearGradient colors={['#0c0517', '#1a1030']} style={{ flex: 1 }}>
+    <View style={{ flex: 1, backgroundColor: Colors.bg }}>
       <SafeAreaView style={{ flex: 1 }}>
         <KeyboardAvoidingView
           style={{ flex: 1 }}
@@ -89,11 +96,11 @@ export default function ChatScreen() {
                 <Image source={LOGO} style={styles.aiAvatar} resizeMode="contain" />
               </View>
               <View style={{ flex: 1 }}>
-                <Text style={styles.headerEyebrow}>Локальный помощник</Text>
-                <Text style={styles.headerTitle}>GuardAurora</Text>
-                <View style={styles.onlineRow}>
+              <Text style={styles.headerEyebrow}>{t('Офлайн-справка')}</Text>
+              <Text style={styles.headerTitle}>{t('Помощь GuardAurora')}</Text>
+              <View style={styles.onlineRow}>
                   <View style={styles.onlineDot} />
-                  <Text style={styles.onlineText}>Локальные ответы · без отправки данных</Text>
+              <Text style={styles.onlineText}>{t('Готовые ответы · без отправки данных')}</Text>
                 </View>
               </View>
             </View>
@@ -135,7 +142,7 @@ export default function ChatScreen() {
             {messages.length < 3 && (
               <View style={styles.quickWrap}>
                 <View style={{ paddingHorizontal: Spacing.lg }}>
-                  <SectionTitle label="Быстрые запросы" />
+                  <SectionTitle label={t('Быстрые запросы')} />
                 </View>
                 <ScrollView
                   horizontal showsHorizontalScrollIndicator={false}
@@ -144,7 +151,7 @@ export default function ChatScreen() {
                 >
                   {QUICK.map(q => (
                     <TouchableOpacity key={q} style={styles.chip} onPress={() => send(q)}>
-                      <Text style={styles.chipText}>{q}</Text>
+                      <Text style={styles.chipText}>{t(q)}</Text>
                     </TouchableOpacity>
                   ))}
                 </ScrollView>
@@ -155,7 +162,7 @@ export default function ChatScreen() {
             <View style={[styles.inputRow, { paddingBottom: Math.max(insets.bottom, 8) + 74 }]}>
               <TextInput
                 style={styles.input}
-                placeholder="Напиши сообщение..."
+                placeholder={t('Напиши сообщение...')}
                 placeholderTextColor={Colors.textMuted}
                 value={input}
                 onChangeText={setInput}
@@ -167,16 +174,16 @@ export default function ChatScreen() {
                 disabled={!input.trim() || loading}
                 style={[styles.sendBtn, (!input.trim() || loading) && { opacity: 0.35 }]}
               >
-                <LinearGradient colors={Colors.gradPrimary} style={styles.sendGrad}>
+                <View style={styles.sendGrad}>
                   <Ionicons name="send" size={17} color="#fff" />
-                </LinearGradient>
+                </View>
               </TouchableOpacity>
             </View>
 
           </Animated.View>
         </KeyboardAvoidingView>
       </SafeAreaView>
-    </LinearGradient>
+    </View>
   );
 }
 
@@ -240,7 +247,7 @@ const styles = StyleSheet.create({
     alignItems: 'center', justifyContent: 'center',
   },
   bubble: { maxWidth: '78%', borderRadius: 18, padding: Spacing.md },
-  bubbleUser: { backgroundColor: '#6d3fe3', borderBottomRightRadius: 4 },
+  bubbleUser: { backgroundColor: Colors.lavender, borderBottomRightRadius: 4 },
   bubbleAI: { backgroundColor: Colors.bgCardLight, borderBottomLeftRadius: 4, borderWidth: 1, borderColor: Colors.border },
   bubbleText: { fontSize: 15, lineHeight: 22 },
   textUser: { color: Colors.white },
@@ -267,5 +274,5 @@ const styles = StyleSheet.create({
     fontSize: 15, color: Colors.white, maxHeight: 120,
   },
   sendBtn: { width: 46, height: 46 },
-  sendGrad: { width: 46, height: 46, borderRadius: 23, alignItems: 'center', justifyContent: 'center' },
+  sendGrad: { width: 46, height: 46, borderRadius: Radius.md, backgroundColor: Colors.lavender, alignItems: 'center', justifyContent: 'center' },
 });

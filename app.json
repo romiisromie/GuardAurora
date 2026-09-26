@@ -3,27 +3,28 @@
     "name": "GuardAurora",
     "slug": "guardaurora",
     "version": "1.0.0",
+    "description": "Офлайн-помощник для личной безопасности: локальная отметка SOS, доверенные контакты и координаты по запросу. SOS не вызывает службы и не отправляет сообщения автоматически.",
     "orientation": "portrait",
-    "icon": "./assets/logo.png",
-    "userInterfaceStyle": "dark",
+    "icon": "./assets/guardaurora-mark.png",
+    "userInterfaceStyle": "light",
     "newArchEnabled": true,
     "splash": {
-      "image": "./assets/logo.png",
+      "image": "./assets/guardaurora-mark.png",
       "resizeMode": "contain",
-      "backgroundColor": "#0d0118"
+      "backgroundColor": "#168253"
     },
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "com.guardaurora.app",
       "infoPlist": {
         "NSMicrophoneUsageDescription": "GuardAurora использует микрофон для локального измерения уровня звука при включённом мониторинге.",
-        "NSLocationWhenInUseUsageDescription": "GuardAurora использует геолокацию для отображения координат при запросе и во время мониторинга."
+        "NSLocationWhenInUseUsageDescription": "GuardAurora определяет координаты только по вашему запросу, чтобы показать их и открыть в картах."
       }
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/logo.png",
-        "backgroundColor": "#0d0118"
+        "foregroundImage": "./assets/guardaurora-mark.png",
+        "backgroundColor": "#168253"
       },
       "package": "com.guardaurora.app",
       "permissions": [
@@ -35,7 +36,7 @@
       ]
     },
     "web": {
-      "favicon": "./assets/logo.png"
+      "favicon": "./assets/guardaurora-mark.png"
     },
     "plugins": [
       [
