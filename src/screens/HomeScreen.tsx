@@ -21,7 +21,7 @@ import {
 import { Colors, Spacing, Radius } from '../theme';
 import { useLanguage } from '../i18n';
 
-const LOGO = require('../../assets/guardaurora-mark.png');
+const LOGO = require('../../assets/guardaurora-symbol.png');
 
 export default function HomeScreen() {
   const { t, locale } = useLanguage();
