@@ -143,6 +143,16 @@ export default function HomeScreen() {
           />
 
           <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
+            <View style={styles.brandBanner}>
+              <View style={styles.brandBannerIcon}>
+                <Ionicons name="shield-checkmark" size={23} color="#FFFFFF" />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.brandBannerTitle}>План действий — под рукой</Text>
+                <Text style={styles.brandBannerText}>Контакты, координаты и локальный сигнал SOS в одном месте.</Text>
+              </View>
+            </View>
+
             <GlassCard style={styles.heroCard}>
               <View style={styles.heroPad}>
                 <View style={styles.heroTopRow}>
@@ -170,12 +180,12 @@ export default function HomeScreen() {
                     accessibilityHint={sosActive ? 'Попросит подтвердить остановку' : 'Запускает трёхсекундный отсчёт'}
                   >
                     <View>
-                      <PulseRing color={cfg.ring} size={150} active={false}>
+                      <PulseRing color={Colors.danger} size={150} active={false}>
                         {countdown !== null ? (
-                          <Text style={styles.countdownNum}>{countdown}</Text>
+                        <Text style={styles.countdownNum}>{countdown}</Text>
                         ) : (
                           <View style={styles.shieldInner}>
-                            <Ionicons name={sosActive ? 'stop-circle' : 'warning'} size={34} color={cfg.color} />
+                            <Ionicons name={sosActive ? 'stop-circle' : 'warning'} size={30} color="#FFFFFF" />
                             <Text style={styles.sosLabel}>{sosActive ? 'Остановить SOS' : 'Нажмите для SOS'}</Text>
                             <Text style={styles.sosSubLabel}>
                               {sosActive ? 'SOS отмечен в журнале на устройстве' : 'SOS не вызывает службы и не отправляет сообщения'}
@@ -364,6 +374,17 @@ function ReadinessRow({ label, value, good }: { label: string; value: string; go
 
 const styles = StyleSheet.create({
   scroll: { paddingHorizontal: Spacing.lg, paddingBottom: 130 },
+  brandBanner: {
+    flexDirection: 'row', alignItems: 'center', gap: 14,
+    backgroundColor: '#168253', borderRadius: Radius.lg,
+    paddingHorizontal: Spacing.md, paddingVertical: 18, marginBottom: Spacing.md,
+  },
+  brandBannerIcon: {
+    width: 46, height: 46, borderRadius: Radius.md,
+    backgroundColor: 'rgba(255,255,255,0.16)', alignItems: 'center', justifyContent: 'center',
+  },
+  brandBannerTitle: { fontSize: 17, fontWeight: '700', color: '#FFFFFF' },
+  brandBannerText: { fontSize: 13, color: 'rgba(255,255,255,0.88)', lineHeight: 18, marginTop: 4 },
   heroCard: { marginBottom: Spacing.lg },
   heroPad: { padding: Spacing.lg },
   heroTopRow: {
@@ -400,9 +421,9 @@ const styles = StyleSheet.create({
   liveText: { fontSize: 11, fontWeight: '800', letterSpacing: 0.8 },
   sosSection: { alignItems: 'center', marginBottom: Spacing.lg },
   shieldInner: { alignItems: 'center', gap: 6 },
-  sosLabel: { fontSize: 15, fontWeight: '700', color: Colors.white },
-  sosSubLabel: { fontSize: 10, color: Colors.textMuted, textAlign: 'center', maxWidth: 116, lineHeight: 14 },
-  countdownNum: { fontSize: 56, fontWeight: '900', color: Colors.danger, lineHeight: 62 },
+  sosLabel: { fontSize: 15, fontWeight: '700', color: '#FFFFFF', textAlign: 'center' },
+  sosSubLabel: { fontSize: 10, color: 'rgba(255,255,255,0.9)', textAlign: 'center', maxWidth: 116, lineHeight: 14 },
+  countdownNum: { fontSize: 56, fontWeight: '800', color: '#FFFFFF', lineHeight: 62 },
   cancelBtn: {
     marginTop: Spacing.md,
     borderRadius: Radius.full,

@@ -48,9 +48,7 @@ export function GradientButton({ label, onPress, colors = Colors.gradPrimary, st
 export function PulseRing({ color = Colors.danger, size = 116, children }: {
   color?: string; size?: number; active?: boolean; children?: React.ReactNode;
 }) {
-  return <View style={{ width: size, height: size, borderRadius: size / 2, backgroundColor: `${color}12`, alignItems: 'center', justifyContent: 'center' }}>
-    <View style={{ width: size * 0.82, height: size * 0.82, borderRadius: size, backgroundColor: '#FFFFFF', borderWidth: 2, borderColor: color, alignItems: 'center', justifyContent: 'center' }}>{children}</View>
-  </View>;
+  return <View style={{ width: size, height: size, borderRadius: size / 2, backgroundColor: color, alignItems: 'center', justifyContent: 'center', padding: 12 }}>{children}</View>;
 }
 
 export function SoundWave({ level }: { level: number; color?: string; barCount?: number }) {
