@@ -17,6 +17,7 @@
       "supportsTablet": false,
       "bundleIdentifier": "com.guardaurora.app",
       "infoPlist": {
+        "CFBundleAllowMixedLocalizations": true,
         "NSMicrophoneUsageDescription": "GuardAurora использует микрофон для локального измерения уровня звука при включённом мониторинге.",
         "NSLocationWhenInUseUsageDescription": "GuardAurora определяет координаты только по вашему запросу, чтобы показать их и открыть в картах."
       }
@@ -49,6 +50,11 @@
       ],
       "expo-font"
     ],
+    "locales": {
+      "ru": "./locales/ru.json",
+      "kk": "./locales/kk.json",
+      "en": "./locales/en.json"
+    },
     "extra": {
       "privacyPolicyUrl": "",
       "supportEmail": "",

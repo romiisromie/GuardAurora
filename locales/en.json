@@ -1,0 +1,10 @@
+{
+  "ios": {
+    "CFBundleDisplayName": "GuardAurora",
+    "NSMicrophoneUsageDescription": "GuardAurora measures overall sound level on your device while monitoring is on. Audio is not recognized or sent.",
+    "NSLocationWhenInUseUsageDescription": "GuardAurora accesses your location only when you ask, to show your coordinates and optionally open them in maps."
+  },
+  "android": {
+    "app_name": "GuardAurora"
+  }
+}

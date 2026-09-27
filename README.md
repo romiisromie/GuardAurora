@@ -37,14 +37,15 @@ npm run build:web
 
 | Переменная | Нужна | Назначение |
 | --- | --- | --- |
-| `GUARDAURORA_PRIVACY_POLICY_URL` | Да | Публичная рабочая ссылка на политику конфиденциальности. Сначала заполните в ней данные оператора и контакты. |
-| `GUARDAURORA_SUPPORT_EMAIL` | Да | Публичный адрес поддержки и запросов о данных, отображаемый в приложении. |
+| `GUARDAURORA_PRIVACY_POLICY_URL` | Нет | По умолчанию `https://guard-aurora.vercel.app/privacy`. |
+| `GUARDAURORA_SUPPORT_URL` | Нет | По умолчанию `https://guard-aurora.vercel.app/support`. URL поддержки для карточки App Store. |
+| `GUARDAURORA_SUPPORT_EMAIL` | Нет | По умолчанию `romiisromie@gmail.com`, отображается в приложении и на страницах помощи/политики. |
 | `SENTRY_DSN` | По желанию | Включает отправку отчётов об ошибках в Sentry. Пустое значение отключает отправку. Если включено, это нужно отразить в политике и формах магазинов. |
 | `SENTRY_AUTH_TOKEN` | Только при настройке загрузки source maps | Секретный токен Sentry; сам по себе не включает загрузку карт исходников. Не храните его в Git и клиентском приложении. |
 
 Отчёты Sentry выключены, пока `SENTRY_DSN` пуст. Аналитический SDK не подключён. Не заявляйте, что мониторинг сбоев работает, пока не проверите событие из production-сборки в панели Sentry. Настройка загрузки source maps требует отдельной конфигурации EAS/Sentry.
 
-После публикации политики проверьте ссылку в браузере без входа в аккаунт. Сборки выполняются в EAS:
+Публичные страницы политики и поддержки подготовлены по URL выше. Сборки выполняются в EAS:
 
 ```sh
 npx eas-cli login
@@ -56,12 +57,13 @@ npx eas-cli build --platform android --profile production
 
 ## Чек-лист перед отправкой
 
-- [ ] Внести юридическое имя оператора и контакты в `src/legal/privacyPolicy.ts`.
-- [ ] Опубликовать завершённую политику на стабильном публичном URL и установить `GUARDAURORA_PRIVACY_POLICY_URL`.
-- [ ] Указать и проверить публичный адрес поддержки.
+- [ ] Активировать Apple Developer Program и создать запись приложения в App Store Connect.
+- [ ] Сверить Bundle ID `com.guardaurora.app` в App ID, карточке App Store Connect и EAS.
+- [ ] Добавить App Store Connect app ID в production submit profile EAS.
+- [ ] Заполнить карточку магазина по [release guide](docs/APP_STORE_RELEASE.md).
 - [ ] Решить, включать ли Sentry; проверить production-отчёт и раскрыть сбор данных SDK в формах магазинов.
 - [ ] Проверить privacy report iOS и актуальные требования к privacy manifest сторонних SDK.
-- [ ] Заполнить возрастной рейтинг, регионы, скриншоты, описание, URL поддержки и privacy/data safety в App Store Connect и Play Console.
+- [ ] Заполнить возрастной рейтинг по анкете Apple, регионы, скриншоты, описание, URL поддержки и privacy/data safety в App Store Connect и Play Console.
 - [ ] Проверить на реальных устройствах iOS и Android разрешения, звонки/SMS-черновики, отмену/остановку SOS, офлайн-режим, отказ в геолокации и удаление данных.
 - [ ] Выполнить store-сборки и пройти модерацию через реальные аккаунты разработчика.
 
