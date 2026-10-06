@@ -1,0 +1,70 @@
+{
+  "expo": {
+    "name": "GuardAurora",
+    "slug": "guardaurora",
+    "version": "1.0.0",
+    "description": "Офлайн-помощник для личной безопасности: локальная отметка SOS, доверенные контакты и координаты по запросу. SOS не вызывает службы и не отправляет сообщения автоматически.",
+    "orientation": "portrait",
+    "icon": "./assets/guardaurora-icon.png",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "splash": {
+      "image": "./assets/guardaurora-symbol.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#168253"
+    },
+    "ios": {
+      "supportsTablet": false,
+      "config": {
+        "usesNonExemptEncryption": false
+      },
+      "bundleIdentifier": "com.guardaurora.app",
+      "infoPlist": {
+        "CFBundleAllowMixedLocalizations": true,
+        "NSMicrophoneUsageDescription": "GuardAurora использует микрофон для локального измерения уровня звука при включённом мониторинге.",
+        "NSLocationWhenInUseUsageDescription": "GuardAurora определяет координаты только по вашему действию — по кнопке на карте или при запуске SOS, — чтобы показать их, сохранить в журнале на устройстве и при желании открыть в картах."
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/guardaurora-adaptive.png",
+        "backgroundColor": "#168253"
+      },
+      "package": "com.guardaurora.app",
+      "permissions": [
+        "android.permission.RECORD_AUDIO",
+        "android.permission.ACCESS_FINE_LOCATION",
+        "android.permission.ACCESS_COARSE_LOCATION",
+        "android.permission.VIBRATE",
+        "android.permission.MODIFY_AUDIO_SETTINGS"
+      ]
+    },
+    "web": {
+      "favicon": "./assets/guardaurora-icon.png"
+    },
+    "plugins": [
+      [
+        "expo-av",
+        { "microphonePermission": "Разрешить GuardAurora использовать микрофон во время включённого мониторинга." }
+      ],
+      [
+        "expo-location",
+        { "locationWhenInUsePermission": "Разрешить GuardAurora определять координаты при использовании приложения." }
+      ],
+      "expo-font"
+    ],
+    "locales": {
+      "ru": "./locales/ru.json",
+      "kk": "./locales/kk.json",
+      "en": "./locales/en.json"
+    },
+    "extra": {
+      "privacyPolicyUrl": "",
+      "supportEmail": "",
+      "sentryDsn": "",
+      "eas": {
+        "projectId": "fae08a2d-7242-49e3-b95d-eaddd915629c"
+      }
+    }
+  }
+}

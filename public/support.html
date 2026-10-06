@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#168253">
+  <meta name="description" content="Поддержка GuardAurora: ответы о приложении и связь с оператором.">
+  <title>Поддержка — GuardAurora</title>
+  <style>
+    :root{font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#17231c;background:#f3f7f4;font-synthesis:none;text-rendering:optimizeLegibility}*{box-sizing:border-box}body{margin:0;padding:36px 18px 64px}.page{max-width:780px;margin:auto}.brand{color:#168253;font-weight:800;letter-spacing:.02em;font-size:15px}h1{font-size:clamp(28px,5vw,40px);line-height:1.15;margin:12px 0 8px}p{font-size:16px;line-height:1.7;color:#445249}.switch{display:flex;gap:8px;margin:26px 0 18px}.switch button{border:1px solid #d5e2d9;background:white;color:#526157;padding:9px 16px;border-radius:999px;font:inherit;font-size:14px;font-weight:650;cursor:pointer}.switch button[aria-pressed="true"]{background:#168253;color:white;border-color:#168253}.paper{background:white;border:1px solid #e0e9e3;border-radius:20px;padding:clamp(20px,5vw,36px);box-shadow:0 8px 30px #1733220a}h2{font-size:19px;margin:24px 0 8px;color:#1d3025}h2:first-child{margin-top:0}a{color:#13774b}footer{font-size:13px;color:#728077;margin:18px 4px}@media(max-width:520px){body{padding:24px 14px 44px}.switch{gap:5px}.switch button{padding:8px 13px}}
+  </style>
+</head>
+<body>
+  <main class="page">
+    <div class="brand">GuardAurora</div>
+    <h1 id="page-title">Поддержка</h1>
+    <nav class="switch" aria-label="Language">
+      <button type="button" data-lang="ru" aria-pressed="true">Русский</button>
+      <button type="button" data-lang="kk" aria-pressed="false">Қазақша</button>
+      <button type="button" data-lang="en" aria-pressed="false">English</button>
+    </nav>
+    <article class="paper" id="content" lang="ru"></article>
+    <footer><a href="https://guard-aurora.vercel.app/privacy">Политика конфиденциальности</a> · GuardAurora</footer>
+  </main>
+  <script>
+    const pages={
+      ru:{title:'Поддержка GuardAurora',sections:[
+        ['О приложении','GuardAurora хранит доверенные контакты и журнал событий на вашем устройстве. Приложение не вызывает экстренные службы и не отправляет SOS-сообщения автоматически. При опасности обратитесь в местную экстренную службу напрямую.'],
+        ['Частые вопросы','<strong>Как поделиться координатами?</strong><br>Откройте экран карты и нажмите кнопку определения координат. Затем при желании откройте их в установленном приложении карт.<br><br><strong>Как связаться с доверенным контактом?</strong><br>Добавьте его на экране «Люди», затем вручную выберите звонок или SMS. Перед отправкой SMS проверьте текст и подтвердите действие.<br><br><strong>Как удалить данные?</strong><br>Откройте «Право» → «Удалить локальные данные». У приложения нет аккаунтов или облачной копии данных.'],
+        ['Связаться с нами','По вопросам о приложении, доступности или конфиденциальности напишите оператору: <a href="mailto:romiisromie@gmail.com">romiisromie@gmail.com</a>. Пожалуйста, не отправляйте в письме пароли, коды подтверждения или сведения о чужих персональных данных.']
+      ]},
+      kk:{title:'GuardAurora қолдауы',sections:[
+        ['Қолданба туралы','GuardAurora сенімді контактілер мен оқиғалар журналын құрылғыңызда сақтайды. Қолданба шұғыл қызметтерге қоңырау шалмайды және SOS хабарларын автоматты түрде жібермейді. Қауіп туындаса, жергілікті шұғыл қызметке тікелей хабарласыңыз.'],
+        ['Жиі қойылатын сұрақтар','<strong>Координаттарды қалай бөлісуге болады?</strong><br>Карта экранын ашып, орналасқан жерді анықтау түймесін басыңыз. Қаласаңыз, координаттарды орнатылған карта қолданбасында ашыңыз.<br><br><strong>Сенімді контактімен қалай байланысуға болады?</strong><br>Оны «Адамдар» экранына қосып, қоңырауды немесе SMS-ті қолмен таңдаңыз. SMS жібермес бұрын мәтінді тексеріп, әрекетті растаңыз.<br><br><strong>Деректерді қалай өшіруге болады?</strong><br>«Құқық» → «Жергілікті деректерді жою» тармағын ашыңыз. Қолданбада тіркелгі немесе деректердің бұлттағы көшірмесі жоқ.'],
+        ['Бізбен байланысу','Қолданба, қолжетімділік немесе құпиялық туралы сұрақтар бойынша операторға жазыңыз: <a href="mailto:romiisromie@gmail.com">romiisromie@gmail.com</a>. Хатта құпиясөздерді, растау кодтарын немесе басқа адамдардың жеке деректерін жібермеңіз.']
+      ]},
+      en:{title:'GuardAurora Support',sections:[
+        ['About the app','GuardAurora stores trusted contacts and activity entries on your device. The app does not call emergency services or send SOS messages automatically. If you are in danger, contact your local emergency service directly.'],
+        ['Frequently asked questions','<strong>How do I share my coordinates?</strong><br>Open the Map screen and tap the location button. You can then choose to open the coordinates in an installed maps app.<br><br><strong>How do I contact a trusted person?</strong><br>Add them on the People screen, then manually choose a call or SMS. Review the SMS and confirm before sending.<br><br><strong>How do I delete my data?</strong><br>Open Privacy & Legal → Delete on-device data. The app has no accounts or cloud copy of your data.'],
+        ['Contact us','For app, accessibility, or privacy questions, email the operator at <a href="mailto:romiisromie@gmail.com">romiisromie@gmail.com</a>. Please do not include passwords, verification codes, or another person’s sensitive information.']
+      ]}
+    };
+    const article=document.getElementById('content');
+    function setLanguage(lang){const page=pages[lang];document.documentElement.lang=lang;document.getElementById('page-title').textContent=page.title;article.lang=lang;article.replaceChildren(...page.sections.flatMap(([heading,body])=>{const h=document.createElement('h2');h.textContent=heading;const p=document.createElement('p');p.innerHTML=body;return [h,p]}));document.querySelectorAll('[data-lang]').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.lang===lang)))}
+    document.querySelectorAll('[data-lang]').forEach(button=>button.addEventListener('click',()=>setLanguage(button.dataset.lang)));setLanguage('ru');
+  </script>
+</body>
+</html>
