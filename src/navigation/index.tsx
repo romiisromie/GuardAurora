@@ -1,8 +1,9 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Platform } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { NavigationContainer, DefaultTheme } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import HomeScreen from '../screens/HomeScreen';
 import MapScreen from '../screens/MapScreen';
 import ChatScreen from '../screens/ChatScreen';
@@ -53,10 +54,11 @@ const linking = {
 function CustomTabBar({ state, navigation }: any) {
   const { sosActive } = useApp();
   const { t } = useLanguage();
+  const insets = useSafeAreaInsets();
 
   return (
     <View style={styles.tabBarWrap}>
-      <View style={styles.tabBar}>
+      <View style={[styles.tabBar, { paddingBottom: Math.max(insets.bottom, 12) }]}>
         {state.routes.map((route: any, index: number) => {
           const isFocused = state.index === index;
           const tab = TABS[index];
@@ -118,13 +120,13 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderColor: Colors.border,
     paddingTop: 8,
-    paddingBottom: Platform.OS === 'ios' ? 24 : 12,
     paddingHorizontal: 2,
   },
   tabItem: {
     flex: 1,
     alignItems: 'center',
     gap: 2,
+    minHeight: 44,
   },
   tabIconWrap: {
     height: 24,
@@ -132,7 +134,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   tabLabel: {
-    fontSize: 9,
+    fontSize: 10,
     fontWeight: '600',
     letterSpacing: 0.1,
   },

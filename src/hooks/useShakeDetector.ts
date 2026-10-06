@@ -1,4 +1,4 @@
-import { useEffect, useRef, useCallback } from 'react';
+import { useEffect, useRef, useCallback, useState } from 'react';
 import { Accelerometer } from 'expo-sensors';
 import { AppState } from 'react-native';
 import { useApp } from '../store/AppContext';
@@ -17,6 +17,15 @@ export function useShakeDetector() {
   const lastPeakRef = useRef(0);
   const sequenceStartRef = useRef(0);
   const shakeCountRef = useRef(0);
+  const [available, setAvailable] = useState(false);
+
+  useEffect(() => {
+    let mounted = true;
+    Accelerometer.isAvailableAsync()
+      .then(result => { if (mounted) setAvailable(result); })
+      .catch(() => { if (mounted) setAvailable(false); });
+    return () => { mounted = false; };
+  }, []);
 
   const resetSequence = useCallback(() => {
     shakeCountRef.current = 0;
@@ -24,6 +33,7 @@ export function useShakeDetector() {
   }, []);
 
   const start = useCallback(() => {
+    if (subRef.current) return;
     Accelerometer.setUpdateInterval(80);
     subRef.current = Accelerometer.addListener(({ x, y, z }) => {
       const mag = Math.sqrt(x * x + y * y + z * z);
@@ -63,7 +73,7 @@ export function useShakeDetector() {
 
   useEffect(() => {
     const sync = (state: string) => {
-      if (isMonitoring && !sosActive && state === 'active') {
+      if (available && isMonitoring && !sosActive && state === 'active') {
         resetSequence();
         start();
       } else {
@@ -77,5 +87,7 @@ export function useShakeDetector() {
       subscription.remove();
       stop();
     };
-  }, [isMonitoring, sosActive, start, stop, resetSequence]);
+  }, [available, isMonitoring, sosActive, start, stop, resetSequence]);
+
+  return { available };
 }

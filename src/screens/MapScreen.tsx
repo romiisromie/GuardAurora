@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, Linking, Alert } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Linking } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useApp } from '../store/AppContext';
@@ -7,6 +7,7 @@ import { useLocation } from '../hooks/useLocation';
 import { GlassCard, GradientButton, ScreenHeader } from '../components/ui';
 import { Colors, Spacing, Radius } from '../theme';
 import { useLanguage } from '../i18n';
+import { showAlert } from '../lib/dialog';
 
 export default function MapScreen() {
   const { t, locale } = useLanguage();
@@ -29,7 +30,7 @@ export default function MapScreen() {
     try {
       await Linking.openURL(url);
     } catch {
-      Alert.alert(t('Карты недоступны'), t('Не удалось открыть приложение или сайт карт.'));
+      showAlert(t('Карты недоступны'), t('Не удалось открыть приложение или сайт карт.'));
     }
   };
 
@@ -53,7 +54,7 @@ export default function MapScreen() {
                   <Text selectable style={styles.coordinates}>
                     {location.latitude.toFixed(6)}, {location.longitude.toFixed(6)}
                   </Text>
-                  <Text style={styles.detail}>{t('Точность около')} {Math.round(location.accuracy)} м · {new Date(location.timestamp).toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' })}</Text>
+                  <Text style={styles.detail}>{t('Точность около')} {Math.round(location.accuracy)} {t('м')} · {new Date(location.timestamp).toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' })}</Text>
                   <GradientButton
                     label={t('Открыть координаты в картах')}
                     onPress={openMaps}

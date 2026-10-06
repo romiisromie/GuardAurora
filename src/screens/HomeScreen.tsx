@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import {
   View, Text, StyleSheet, ScrollView, TouchableOpacity,
-  Animated, Alert, Vibration, Image, Platform, Linking,
+  Animated, Vibration, Image, Platform, Linking,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -20,6 +20,7 @@ import {
 } from '../components/ui';
 import { Colors, Spacing, Radius } from '../theme';
 import { useLanguage } from '../i18n';
+import { showAlert } from '../lib/dialog';
 
 const LOGO = require('../../assets/guardaurora-symbol.png');
 
@@ -56,7 +57,7 @@ export default function HomeScreen() {
 
   const handleSOS = () => {
     if (sosActive) {
-      Alert.alert(t('Остановить SOS?'), t('Локальный режим SOS будет выключен.'), [
+      showAlert(t('Остановить SOS?'), t('Локальный режим SOS будет выключен.'), [
         { text: t('Отмена'), style: 'cancel' },
         { text: t('Остановить'), style: 'destructive', onPress: deactivateSOS },
       ]);
@@ -97,7 +98,7 @@ export default function HomeScreen() {
     try {
       await Linking.openURL(`tel:${contact.phone}`);
     } catch {
-      Alert.alert(t('Звонок недоступен'), t('Не удалось открыть приложение телефона.'));
+      showAlert(t('Звонок недоступен'), t('Не удалось открыть приложение телефона.'));
     }
   };
 
@@ -262,7 +263,7 @@ export default function HomeScreen() {
                 <SectionTitle label={t('Протокол действий')} />
                   {[
                     t('Откройте карты телефона, чтобы найти людное место рядом.'),
-                    t('При угрозе удерживайте SOS до окончания отсчёта.'),
+                    t('При угрозе нажмите SOS и дождитесь окончания отсчёта.'),
                     t('Используйте встряхивание телефона для тихого сигнала.'),
                   ].map((item) => (
                     <View key={item} style={styles.bulletRow}>

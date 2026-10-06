@@ -51,8 +51,8 @@ export default function HistoryScreen() {
             {/* Stats */}
             <View style={styles.statsRow}>
               {[
-                { num: threatHistory.filter(e => e.type === 'manual').length, label: t('SOS'), icon: '🚨', color: Colors.rose },
-                { num: threatHistory.filter(e => e.level === 'high').length, label: t('Сигналы SOS'), icon: '⚠️', color: Colors.warning },
+                { num: threatHistory.filter(e => e.type === 'manual').length, label: t('Ручной SOS'), icon: '🚨', color: Colors.rose },
+                { num: threatHistory.filter(e => e.type === 'shake').length, label: t('Тихий SOS'), icon: '📳', color: Colors.warning },
                 { num: trustedContacts.length, label: t('Контакты'), icon: '👥', color: Colors.mint },
               ].map((s, i) => (
                 <GlassCard key={i} style={styles.statCard} accentColor={s.color}>

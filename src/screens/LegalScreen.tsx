@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Linking, Alert } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Linking } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import Constants from 'expo-constants';
@@ -9,21 +9,20 @@ import { Config } from '../config';
 import { PRIVACY_POLICY_SECTIONS } from '../legal/privacyPolicy';
 import { useApp } from '../store/AppContext';
 import { LANGUAGE_OPTIONS, useLanguage } from '../i18n';
+import { showAlert } from '../lib/dialog';
 
 export default function LegalScreen() {
   const { clearLocalData, hydrated, sosActive } = useApp();
   const { language, setLanguage, t } = useLanguage();
 
   const openUrl = async (url: string) => {
+    // canOpenURL is unreliable for mailto: on iOS (scheme allow-list), so open directly and handle failure.
     try {
-      const supported = await Linking.canOpenURL(url);
-      if (!supported) {
-        Alert.alert(t('Ссылка недоступна'), t('Скопируйте адрес с сайта приложения или напишите в поддержку.'));
-        return;
-      }
       await Linking.openURL(url);
     } catch {
-      Alert.alert(t('Ошибка'), t('Не удалось открыть ссылку.'));
+      showAlert(t('Ссылка недоступна'), url.startsWith('mailto:')
+        ? `${t('Напишите нам на адрес')} ${url.slice('mailto:'.length)}`
+        : t('Скопируйте адрес с сайта приложения или напишите в поддержку.'));
     }
   };
 
@@ -31,10 +30,10 @@ export default function LegalScreen() {
 
   const handleClear = () => {
     if (sosActive) {
-      Alert.alert(t('Сначала остановите SOS'), t('Завершите активный режим SOS, чтобы не потерять событие до его завершения.'));
+      showAlert(t('Сначала остановите SOS'), t('Завершите активный режим SOS, чтобы не потерять событие до его завершения.'));
       return;
     }
-    Alert.alert(
+    showAlert(
       t('Удалить локальные данные?'),
       t('Будут удалены доверенные контакты и журнал на этом устройстве. Облачного аккаунта нет.'),
       [
@@ -45,9 +44,9 @@ export default function LegalScreen() {
           onPress: async () => {
             try {
               await clearLocalData();
-              Alert.alert(t('Готово'), t('Доверенные контакты и журнал событий удалены с этого устройства.'));
+              showAlert(t('Готово'), t('Доверенные контакты и журнал событий удалены с этого устройства.'));
             } catch {
-              Alert.alert(t('Не удалось удалить данные'), t('Освободите место на устройстве и попробуйте ещё раз.'));
+              showAlert(t('Не удалось удалить данные'), t('Освободите место на устройстве и попробуйте ещё раз.'));
             }
           },
         },
@@ -62,7 +61,7 @@ export default function LegalScreen() {
           <ScreenHeader
             eyebrow={t('Конфиденциальность')}
             title={t('Правовая информация')}
-            subtitle={`${t('Обновлено')} ${new Date(2026, 8, 26).toLocaleDateString(language === 'kk' ? 'kk-KZ' : language === 'en' ? 'en-US' : 'ru-RU', { year: 'numeric', month: 'long' })}`}
+            subtitle={`${t('Обновлено')} ${new Date(2026, 9, 6).toLocaleDateString(language === 'kk' ? 'kk-KZ' : language === 'en' ? 'en-US' : 'ru-RU', { year: 'numeric', month: 'long' })}`}
           />
         </View>
         <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>

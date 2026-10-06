@@ -107,7 +107,7 @@ No account is required. Contacts, coordinates, and activity entries are stored o
 ## App Review notes draft
 
 ```text
-GuardAurora has no sign-in or demo account. It works offline. To review microphone behavior, open the app and manually enable monitoring; the app measures overall sound level only and stops when the app moves to the background. Location is requested only after the user taps the location control. SOS records a local event only; it does not call emergency services or send a message. Calls and SMS are user-initiated, and SMS requires user confirmation. Local data deletion is available under Privacy & Legal.
+GuardAurora has no sign-in or demo account. It works offline. To review microphone behavior, open the app and manually enable monitoring; the app measures overall sound level only and stops when the app moves to the background. Location permission is requested only after the user taps the location control; if it was already granted, starting SOS takes one location reading for the local SOS entry (no background tracking). SOS records a local event only; it does not call emergency services or send a message. Calls and SMS are user-initiated, and SMS requires user confirmation. Local data deletion is available under Privacy & Legal.
 ```
 
 ## Release checklist

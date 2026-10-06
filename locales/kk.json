@@ -2,7 +2,7 @@
   "ios": {
     "CFBundleDisplayName": "GuardAurora",
     "NSMicrophoneUsageDescription": "GuardAurora бақылау қосулы кезде құрылғыдағы жалпы дыбыс деңгейін өлшейді. Аудио танылмайды және жіберілмейді.",
-    "NSLocationWhenInUseUsageDescription": "GuardAurora орналасқан жерді тек сұрауыңыз бойынша анықтап, координаттарды көрсетеді немесе картада ашуға мүмкіндік береді."
+    "NSLocationWhenInUseUsageDescription": "GuardAurora орналасқан жерді тек түймені басқанда немесе SOS іске қосылғанда анықтайды: координаттарды көрсетіп, құрылғыдағы журналға сақтайды және картада ашуға мүмкіндік береді."
   },
   "android": {
     "app_name": "GuardAurora"

@@ -2,6 +2,7 @@ import React, { Component, ErrorInfo, ReactNode } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { Colors, Spacing } from '../theme';
 import { captureException } from '../lib/monitoring';
+import { useLanguage } from '../i18n';
 
 type Props = { children: ReactNode };
 type State = { error: Error | null };
@@ -19,16 +20,21 @@ export class ErrorBoundary extends Component<Props, State> {
 
   render() {
     if (!this.state.error) return this.props.children;
-    return (
-      <View style={styles.wrap}>
-        <Text style={styles.title}>Что-то пошло не так</Text>
-        <Text style={styles.sub}>Приложение столкнулось с ошибкой. Можно продолжить с главного экрана.</Text>
-        <TouchableOpacity style={styles.btn} onPress={() => this.setState({ error: null })}>
-          <Text style={styles.btnText}>Попробовать снова</Text>
-        </TouchableOpacity>
-      </View>
-    );
+    return <ErrorFallback onRetry={() => this.setState({ error: null })} />;
   }
+}
+
+function ErrorFallback({ onRetry }: { onRetry: () => void }) {
+  const { t } = useLanguage();
+  return (
+    <View style={styles.wrap}>
+      <Text style={styles.title}>{t('Что-то пошло не так')}</Text>
+      <Text style={styles.sub}>{t('Приложение столкнулось с ошибкой. Можно продолжить с главного экрана.')}</Text>
+      <TouchableOpacity style={styles.btn} onPress={onRetry} accessibilityRole="button">
+        <Text style={styles.btnText}>{t('Попробовать снова')}</Text>
+      </TouchableOpacity>
+    </View>
+  );
 }
 
 const styles = StyleSheet.create({

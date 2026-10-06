@@ -13,17 +13,17 @@ initMonitoring();
 
 export default function App() {
   return (
-    <ErrorBoundary>
-      <GestureHandlerRootView style={{ flex: 1 }}>
-        <SafeAreaProvider>
-          <AppProvider>
-            <LanguageProvider>
+    <LanguageProvider>
+      <ErrorBoundary>
+        <GestureHandlerRootView style={{ flex: 1 }}>
+          <SafeAreaProvider>
+            <AppProvider>
               <StatusBar style="dark" backgroundColor="#F3F7F4" />
               <Navigation />
-            </LanguageProvider>
-          </AppProvider>
-        </SafeAreaProvider>
-      </GestureHandlerRootView>
-    </ErrorBoundary>
+            </AppProvider>
+          </SafeAreaProvider>
+        </GestureHandlerRootView>
+      </ErrorBoundary>
+    </LanguageProvider>
   );
 }

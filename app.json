@@ -15,11 +15,14 @@
     },
     "ios": {
       "supportsTablet": false,
+      "config": {
+        "usesNonExemptEncryption": false
+      },
       "bundleIdentifier": "com.guardaurora.app",
       "infoPlist": {
         "CFBundleAllowMixedLocalizations": true,
         "NSMicrophoneUsageDescription": "GuardAurora использует микрофон для локального измерения уровня звука при включённом мониторинге.",
-        "NSLocationWhenInUseUsageDescription": "GuardAurora определяет координаты только по вашему запросу, чтобы показать их и открыть в картах."
+        "NSLocationWhenInUseUsageDescription": "GuardAurora определяет координаты только по вашему действию — по кнопке на карте или при запуске SOS, — чтобы показать их, сохранить в журнале на устройстве и при желании открыть в картах."
       }
     },
     "android": {

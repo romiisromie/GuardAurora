@@ -1,9 +1,11 @@
-import { useState, useEffect, useCallback } from 'react';
-import { Alert, AppState, Linking, Platform } from 'react-native';
+import { useState, useEffect, useCallback, useRef } from 'react';
+import { AppState, Linking, Platform } from 'react-native';
 import { Audio } from 'expo-av';
 import * as FileSystem from 'expo-file-system/legacy';
 import { useApp } from '../store/AppContext';
 import { captureException } from '../lib/monitoring';
+import { useLanguage } from '../i18n';
+import { showAlert } from '../lib/dialog';
 
 async function stopAndDeleteRecording(recording: Audio.Recording) {
   const uri = recording.getURI();
@@ -23,6 +25,9 @@ async function stopAndDeleteRecording(recording: Audio.Recording) {
 
 export function useAudioMonitor() {
   const { isMonitoring, sosActive, setSoundLevel } = useApp();
+  const { t } = useLanguage();
+  const tRef = useRef(t);
+  tRef.current = t;
   const [hasPermission, setHasPermission] = useState(false);
 
   const requestPermission = useCallback(async () => {
@@ -30,19 +35,19 @@ export function useAudioMonitor() {
       const { granted } = await Audio.requestPermissionsAsync();
       setHasPermission(granted);
       if (!granted) {
-        Alert.alert('Нет доступа к микрофону', 'Уровень звука измеряться не будет. Тихий SOS работает независимо от микрофона, пока приложение открыто.', [
-          { text: 'Продолжить без микрофона', style: 'cancel' },
-          ...(Platform.OS === 'web' ? [] : [{ text: 'Настройки', onPress: () => { void Linking.openSettings().catch(() => {}); } }]),
+        showAlert(t('Нет доступа к микрофону'), t('Уровень звука измеряться не будет. Тихий SOS работает независимо от микрофона, пока приложение открыто.'), [
+          { text: t('Продолжить без микрофона'), style: 'cancel' },
+          ...(Platform.OS === 'web' ? [] : [{ text: t('Настройки'), onPress: () => { void Linking.openSettings().catch(() => {}); } }]),
         ]);
       }
       return granted;
     } catch (error) {
       captureException(error, 'audio-permission');
       setHasPermission(false);
-      Alert.alert('Не удалось запросить микрофон', 'Проверьте системные настройки разрешений и попробуйте снова.');
+      showAlert(t('Не удалось запросить микрофон'), t('Проверьте системные настройки разрешений и попробуйте снова.'));
       return false;
     }
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     if (!isMonitoring || sosActive) {
@@ -61,7 +66,11 @@ export function useAudioMonitor() {
       interval = null;
       const current = recording;
       recording = null;
-      if (current) await stopAndDeleteRecording(current);
+      if (current) {
+        await stopAndDeleteRecording(current);
+        // Release the iOS record session so other audio is not routed as a call.
+        await Audio.setAudioModeAsync({ allowsRecordingIOS: false }).catch(() => {});
+      }
       setSoundLevel(0);
     };
 
@@ -102,7 +111,7 @@ export function useAudioMonitor() {
       } catch (error) {
         captureException(error, 'audio-monitor');
         setSoundLevel(0);
-        Alert.alert('Мониторинг звука недоступен', 'Не удалось запустить измерение уровня звука. Проверьте разрешение на микрофон и попробуйте снова.');
+        showAlert(tRef.current('Мониторинг звука недоступен'), tRef.current('Не удалось запустить измерение уровня звука. Проверьте разрешение на микрофон и попробуйте снова.'));
       } finally {
         starting = false;
       }

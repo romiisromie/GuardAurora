@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useCallback, useRef, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as Location from 'expo-location';
 import { captureException } from '../lib/monitoring';
 
 const CONTACTS_KEY = 'ga.contacts';
@@ -119,7 +120,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         if (rawHistory) {
           try {
             const parsed: unknown = JSON.parse(rawHistory);
-            if (Array.isArray(parsed)) setThreatHistory(parsed.filter(isStoredEvent).slice(0, 50));
+            // SOS mode is not restored after a relaunch, so an open entry from a previous session is closed.
+            if (Array.isArray(parsed)) setThreatHistory(parsed.filter(isStoredEvent).slice(0, 50).map(event => ({ ...event, resolved: true })));
           } catch (error) {
             captureException(error, 'parse-history');
           }
@@ -157,17 +159,37 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const activateSOS = useCallback((opts?: { source?: 'manual' | 'shake' }) => {
     if (sosActiveRef.current) return;
     const source = opts?.source ?? 'manual';
+    const eventId = Date.now().toString();
     sosActiveRef.current = true;
     setSosActive(true);
     setStatus('sos');
     setThreatHistory(p => [{
-      id: Date.now().toString(),
+      id: eventId,
       timestamp: Date.now(),
       type: source,
       level: 'high',
       location: location ?? undefined,
       resolved: false,
-    }, ...p]);
+    } satisfies ThreatEvent, ...p].slice(0, 50));
+
+    // One-shot fix for the SOS entry, only when the user has already granted location access.
+    void (async () => {
+      try {
+        const permission = await Location.getForegroundPermissionsAsync();
+        if (!permission.granted) return;
+        const position = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
+        const fresh: LocationData = {
+          latitude: position.coords.latitude,
+          longitude: position.coords.longitude,
+          accuracy: position.coords.accuracy ?? 0,
+          timestamp: position.timestamp,
+        };
+        setLocation(fresh);
+        setThreatHistory(events => events.map(event => event.id === eventId ? { ...event, location: fresh } : event));
+      } catch (error) {
+        captureException(error, 'sos-location');
+      }
+    })();
   }, [location]);
 
   const deactivateSOS = useCallback(() => {

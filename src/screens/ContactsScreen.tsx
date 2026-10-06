@@ -1,7 +1,7 @@
 import React, { useState, useRef } from 'react';
 import {
   View, Text, StyleSheet, ScrollView, TouchableOpacity, Linking,
-  TextInput, Alert, Animated, Modal, KeyboardAvoidingView, Platform,
+  TextInput, Animated, Modal, KeyboardAvoidingView, Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -9,6 +9,7 @@ import { useApp, TrustedContact } from '../store/AppContext';
 import { GlassCard, GradientButton, ScreenHeader, SectionTitle } from '../components/ui';
 import { Colors, Spacing, Radius } from '../theme';
 import { useLanguage } from '../i18n';
+import { showAlert } from '../lib/dialog';
 
 const RELATIONS = ['Семья', 'Подруга', 'Друг', 'Партнёр', 'Коллега', 'Сосед'];
 const AVATARS = ['👩', '👨', '👩‍👧', '👴', '👵', '🧑', '👩‍🦱', '👨‍🦳', '👧', '🧒'];
@@ -38,13 +39,13 @@ export default function ContactsScreen() {
 
   const handleAdd = () => {
     if (!name.trim() || !phone.trim()) {
-      Alert.alert(t('Ошибка'), t('Заполни имя и номер телефона'));
+      showAlert(t('Ошибка'), t('Заполни имя и номер телефона'));
       return;
     }
     const normalizedPhone = phone.trim();
     const digits = normalizedPhone.replace(/\D/g, '');
     if (!/^\+?[\d\s().-]+$/.test(normalizedPhone) || digits.length < 7 || digits.length > 15 || name.trim().length > 80) {
-      Alert.alert(t('Проверьте данные'), t('Укажите имя до 80 символов и номер телефона, содержащий от 7 до 15 цифр.'));
+      showAlert(t('Проверьте данные'), t('Укажите имя до 80 символов и номер телефона, содержащий от 7 до 15 цифр.'));
       return;
     }
     addContact({ id: Date.now().toString(), name: name.trim(), phone: normalizedPhone, relation, avatar });
@@ -66,12 +67,12 @@ export default function ContactsScreen() {
     try {
       await Linking.openURL(`sms:${contact.phone}${separator}body=${body}`);
     } catch {
-      Alert.alert(t('Сообщения недоступны'), t('Не удалось открыть приложение для SMS.'));
+      showAlert(t('Сообщения недоступны'), t('Не удалось открыть приложение для SMS.'));
     }
   };
 
   const handleRemove = (c: TrustedContact) => {
-    Alert.alert(t('Удалить?'), `${c.name} ${t('будет удалён из доверенных лиц.')}`, [
+    showAlert(t('Удалить?'), `${c.name} ${t('будет удалён из доверенных лиц.')}`, [
       { text: t('Отмена'), style: 'cancel' },
       { text: t('Удалить'), style: 'destructive', onPress: () => removeContact(c.id) },
     ]);
@@ -147,7 +148,7 @@ export default function ContactsScreen() {
                         <TouchableOpacity
                           style={[styles.actionBtn, { backgroundColor: Colors.mintGlow }]}
                           accessibilityLabel={`${t('Позвонить')} ${c.name}`}
-                          onPress={() => Linking.openURL(`tel:${c.phone}`).catch(() => Alert.alert(t('Ошибка'), t('Не удалось открыть приложение телефона.')))}
+                          onPress={() => Linking.openURL(`tel:${c.phone}`).catch(() => showAlert(t('Ошибка'), t('Не удалось открыть приложение телефона.')))}
                         >
                           <Ionicons name="call" size={17} color={Colors.mint} />
                         </TouchableOpacity>
