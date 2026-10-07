@@ -12,7 +12,8 @@ import { LANGUAGE_OPTIONS, useLanguage } from '../i18n';
 import { showAlert } from '../lib/dialog';
 
 export default function LegalScreen() {
-  const { clearLocalData, hydrated, sosActive } = useApp();
+  const { clearLocalData, hydrated, sosActive, aiConsent, setAiConsent } = useApp();
+  const aiEnabled = aiConsent === 'granted';
   const { language, setLanguage, t } = useLanguage();
 
   const openUrl = async (url: string) => {
@@ -61,7 +62,7 @@ export default function LegalScreen() {
           <ScreenHeader
             eyebrow={t('Конфиденциальность')}
             title={t('Правовая информация')}
-            subtitle={`${t('Обновлено')} ${new Date(2026, 9, 6).toLocaleDateString(language === 'kk' ? 'kk-KZ' : language === 'en' ? 'en-US' : 'ru-RU', { year: 'numeric', month: 'long' })}`}
+            subtitle={`${t('Обновлено')} ${new Date(2026, 9, 8).toLocaleDateString(language === 'kk' ? 'kk-KZ' : language === 'en' ? 'en-US' : 'ru-RU', { year: 'numeric', month: 'long' })}`}
           />
         </View>
         <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
@@ -77,7 +78,7 @@ export default function LegalScreen() {
                 })}
               </View>
               <Text style={styles.lead}>
-                {t('В этой версии нет регистрации или облачной учётной записи. Контакты, журнал и ответы чата хранятся на устройстве. SOS не вызывает службы и не уведомляет контакты автоматически.')}
+                {t('В этой версии нет регистрации или облачной учётной записи. Контакты и журнал хранятся на устройстве. Сообщения чата отправляются ИИ-сервису только после вашего согласия. SOS не вызывает службы и не уведомляет контакты автоматически.')}
               </Text>
               {Config.privacyPolicyUrl ? (
                 <GradientButton label={t('Открыть политику конфиденциальности')} onPress={() => openUrl(Config.privacyPolicyUrl)} size="md" style={{ marginTop: Spacing.md }} />
@@ -93,6 +94,24 @@ export default function LegalScreen() {
                 <Text style={styles.body}>{t('Контакт поддержки будет добавлен владельцем перед публикацией.')}</Text>
               )}
               <Text style={styles.meta}>{t('Версия')} {Constants.expoConfig?.version ?? '1.0.0'}{hydrated ? '' : ` · ${t('загружаем локальные данные')}`}</Text>
+            </View>
+          </GlassCard>
+
+          <GlassCard style={styles.card} accentColor={Colors.lavender}>
+            <View style={styles.pad}>
+              <Text style={styles.h}>{t('ИИ-помощник в чате')}</Text>
+              <Text style={styles.body}>
+                {aiEnabled
+                  ? t('Включён: сообщения чата отправляются в Google Gemini через сервер GuardAurora. Контакты, координаты и журнал не отправляются.')
+                  : t('Выключен: чат отвечает готовыми офлайн-ответами, сообщения никуда не отправляются.')}
+              </Text>
+              <GradientButton
+                label={aiEnabled ? t('Выключить ИИ-помощника') : t('Включить ИИ-помощника')}
+                onPress={() => setAiConsent(aiEnabled ? 'declined' : 'granted')}
+                colors={aiEnabled ? Colors.gradDark : Colors.gradPrimary}
+                size="md"
+                style={{ marginTop: Spacing.md }}
+              />
             </View>
           </GlassCard>
 

@@ -9,6 +9,7 @@ import { useApp } from '../store/AppContext';
 import { SectionTitle } from '../components/ui';
 import { Colors, Spacing, Radius } from '../theme';
 import { localAssistantReply } from '../lib/localChat';
+import { fetchAiReply } from '../lib/aiChat';
 import { useLanguage } from '../i18n';
 
 const LOGO = require('../../assets/guardaurora-symbol.png');
@@ -19,6 +20,9 @@ interface Msg {
   text: string;
   ts: number;
 }
+
+const WELCOME_OFFLINE = 'Привет! Я локальный помощник GuardAurora 🛡️\n\nМогу объяснить, как работают функции приложения. Ответы подготовлены заранее и формируются на устройстве.\n\nО чём хочешь спросить?';
+const WELCOME_AI = 'Привет! Я ИИ-помощник GuardAurora 🛡️\n\nОпиши, что происходит, — подскажу, что делать в твоей ситуации. Если тебе угрожает опасность прямо сейчас, сразу звони 112.';
 
 const QUICK = [
   'Я чувствую угрозу',
@@ -31,11 +35,10 @@ const QUICK = [
 export default function ChatScreen() {
   const { t, language } = useLanguage();
   const insets = useSafeAreaInsets();
-  const { status, isMonitoring, trustedContacts } = useApp();
-  const [messages, setMessages] = useState<Msg[]>([{
-    id: '0', role: 'assistant', ts: Date.now(),
-    text: 'Привет! Я локальный помощник GuardAurora 🛡️\n\nМогу объяснить, как работают функции приложения. Ответы подготовлены заранее и формируются на устройстве.\n\nО чём хочешь спросить?',
-  }]);
+  const { aiConsent, setAiConsent } = useApp();
+  const aiEnabled = aiConsent === 'granted';
+  const welcome = t(aiEnabled ? WELCOME_AI : WELCOME_OFFLINE);
+  const [messages, setMessages] = useState<Msg[]>([{ id: '0', role: 'assistant', ts: Date.now(), text: welcome }]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const scrollRef = useRef<ScrollView>(null);
@@ -51,19 +54,29 @@ export default function ChatScreen() {
 
   useEffect(() => {
     setMessages(current => current.length === 1 && current[0].id === '0'
-      ? [{ ...current[0], text: t('Привет! Я локальный помощник GuardAurora 🛡️\n\nМогу объяснить, как работают функции приложения. Ответы подготовлены заранее и формируются на устройстве.\n\nО чём хочешь спросить?') }]
+      ? [{ ...current[0], text: welcome }]
       : current);
-  }, [language, t]);
+  }, [welcome]);
 
   const send = async (text: string) => {
     if (!text.trim() || loading) return;
     const user: Msg = { id: Date.now().toString(), role: 'user', text: text.trim(), ts: Date.now() };
+    const history = [...messages.filter(m => m.id !== '0'), user].map(m => ({ role: m.role, text: m.text }));
     setMessages(p => [...p, user]);
     setInput('');
     setLoading(true);
 
     try {
-      const reply = localAssistantReply(text.trim(), t);
+      let reply: string;
+      if (aiEnabled) {
+        try {
+          reply = await fetchAiReply(history, language);
+        } catch {
+          reply = `${localAssistantReply(text.trim(), t)}\n\n${t('ИИ сейчас недоступен — показан офлайн-ответ.')}`;
+        }
+      } else {
+        reply = localAssistantReply(text.trim(), t);
+      }
       setMessages(p => [...p, { id: (Date.now() + 1).toString(), role: 'assistant', text: reply, ts: Date.now() }]);
     } catch {
       setMessages(p => [...p, {
@@ -96,11 +109,11 @@ export default function ChatScreen() {
                 <Image source={LOGO} style={styles.aiAvatar} resizeMode="contain" />
               </View>
               <View style={{ flex: 1 }}>
-              <Text style={styles.headerEyebrow}>{t('Офлайн-справка')}</Text>
+              <Text style={styles.headerEyebrow}>{t(aiEnabled ? 'ИИ-помощник' : 'Офлайн-справка')}</Text>
               <Text style={styles.headerTitle}>{t('Помощь GuardAurora')}</Text>
               <View style={styles.onlineRow}>
                   <View style={styles.onlineDot} />
-              <Text style={styles.onlineText}>{t('Готовые ответы · без отправки данных')}</Text>
+              <Text style={styles.onlineText}>{t(aiEnabled ? 'Ответы ИИ могут ошибаться · в опасности звони 112' : 'Готовые ответы · без отправки данных')}</Text>
                 </View>
               </View>
             </View>
@@ -126,6 +139,20 @@ export default function ChatScreen() {
                   </View>
                 </View>
               ))}
+              {aiConsent === 'unknown' && (
+                <View style={styles.consentCard}>
+                  <Text style={styles.consentTitle}>{t('Включить ИИ-помощника?')}</Text>
+                  <Text style={styles.consentText}>{t('ИИ поможет разобраться в любой ситуации. Для этого текст ваших сообщений в чате будет отправляться через сервер GuardAurora в Google Gemini. Контакты, координаты и журнал не отправляются. Google может использовать сообщения для улучшения своих сервисов, поэтому не пишите имена, адреса и номера телефонов. Без согласия чат отвечает готовыми офлайн-ответами.')}</Text>
+                  <View style={styles.consentRow}>
+                    <TouchableOpacity style={styles.consentSecondary} onPress={() => setAiConsent('declined')} accessibilityRole="button">
+                      <Text style={styles.consentSecondaryText}>{t('Только офлайн')}</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity style={styles.consentPrimary} onPress={() => setAiConsent('granted')} accessibilityRole="button">
+                      <Text style={styles.consentPrimaryText}>{t('Разрешить ИИ')}</Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              )}
               {loading && (
                 <View style={[styles.msgRow, styles.rowAI]}>
                   <View style={styles.aiBubbleAvatar}>
@@ -255,6 +282,23 @@ const styles = StyleSheet.create({
   bubbleTime: { fontSize: 10, color: Colors.textMuted, marginTop: 5, alignSelf: 'flex-end' },
   quickWrap: { marginBottom: 8 },
   quickScroll: { marginBottom: 8 },
+  consentCard: {
+    backgroundColor: Colors.bgCard, borderRadius: Radius.lg, borderWidth: 1, borderColor: Colors.lavender,
+    padding: Spacing.md, gap: 8, marginTop: 4,
+  },
+  consentTitle: { fontSize: 15, fontWeight: '700', color: Colors.white },
+  consentText: { fontSize: 13, lineHeight: 19, color: Colors.textSecondary },
+  consentRow: { flexDirection: 'row', gap: 10, marginTop: 4 },
+  consentSecondary: {
+    flex: 1, minHeight: 44, borderRadius: Radius.md, borderWidth: 1, borderColor: Colors.border,
+    alignItems: 'center', justifyContent: 'center',
+  },
+  consentSecondaryText: { fontSize: 14, fontWeight: '600', color: Colors.textSecondary },
+  consentPrimary: {
+    flex: 1, minHeight: 44, borderRadius: Radius.md, backgroundColor: Colors.lavender,
+    alignItems: 'center', justifyContent: 'center',
+  },
+  consentPrimaryText: { fontSize: 14, fontWeight: '700', color: '#FFFFFF' },
   chip: {
     backgroundColor: Colors.lavenderGlow, borderRadius: Radius.full,
     paddingHorizontal: 14, paddingVertical: 9,

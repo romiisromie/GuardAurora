@@ -6,5 +6,6 @@ module.exports = ({ config }) => ({
     supportUrl: process.env.GUARDAURORA_SUPPORT_URL || 'https://guard-aurora.vercel.app/support',
     supportEmail: process.env.GUARDAURORA_SUPPORT_EMAIL || 'romiisromie@gmail.com',
     sentryDsn: process.env.SENTRY_DSN || '',
+    chatApiUrl: process.env.GUARDAURORA_CHAT_API_URL || 'https://guard-aurora.vercel.app/api/chat',
   },
 });

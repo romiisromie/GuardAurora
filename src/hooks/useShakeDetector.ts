@@ -1,6 +1,7 @@
 import { useEffect, useRef, useCallback, useState } from 'react';
 import { Accelerometer } from 'expo-sensors';
-import { AppState } from 'react-native';
+import { AppState, Platform } from 'react-native';
+import * as Haptics from 'expo-haptics';
 import { useApp } from '../store/AppContext';
 
 /** Порог ускорения (g-эквивалент по величине вектора), выше — считаем пик встряхивания. */
@@ -60,6 +61,8 @@ export function useShakeDetector() {
       if (shakeCountRef.current >= SHAKES_REQUIRED) {
         resetSequence();
         activateSOS({ source: 'shake' });
+        // Silent confirmation: a haptic tap instead of sound, so the user knows the SOS was recorded.
+        if (Platform.OS !== 'web') void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning).catch(() => {});
       }
     });
   }, [activateSOS, resetSequence]);

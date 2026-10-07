@@ -12,10 +12,8 @@ import {
   GlassCard,
   PulseRing,
   SoundWave,
-  StatusBadge,
   ThreatMeter,
   GradientButton,
-  ScreenHeader,
   SectionTitle,
 } from '../components/ui';
 import { Colors, Spacing, Radius } from '../theme';
@@ -138,22 +136,24 @@ export default function HomeScreen() {
     <View style={{ flex: 1, backgroundColor: Colors.bg }}>
       <SafeAreaView style={{ flex: 1 }}>
         <Animated.View style={{ flex: 1, opacity: fadeAnim }}>
-          <ScreenHeader
-            eyebrow={t('Центр безопасности')}
-            title="GuardAurora"
-            subtitle={cfg.summary}
-            right={<StatusBadge label={cfg.label} color={cfg.color} />}
-          />
-
           <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
-            <View style={styles.brandBanner}>
-              <View style={styles.brandBannerIcon}>
-                <Image source={LOGO} style={styles.brandBannerLogo} resizeMode="contain" />
+            <View style={styles.brandHeader}>
+              <View style={[styles.glow, styles.glowTop]} />
+              <View style={[styles.glow, styles.glowBottom]} />
+              <View style={styles.brandRow}>
+                <View style={styles.brandLogoWrap}>
+                  <Image source={LOGO} style={styles.brandLogo} resizeMode="contain" />
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.brandEyebrow}>{t('Центр безопасности')}</Text>
+                  <Text style={styles.brandTitle}>GuardAurora</Text>
+                </View>
+                <View style={styles.brandStatus} accessibilityLabel={cfg.label}>
+                  <View style={[styles.brandStatusDot, { backgroundColor: sosActive ? '#FFB3BC' : '#9FF0C4' }]} />
+                  <Text style={styles.brandStatusText}>{cfg.label}</Text>
+                </View>
               </View>
-              <View style={{ flex: 1 }}>
-                <Text style={styles.brandBannerTitle}>{t('План действий — под рукой')}</Text>
-                <Text style={styles.brandBannerText}>{t('Контакты, координаты и локальный сигнал SOS в одном месте.')}</Text>
-              </View>
+              <Text style={styles.brandSummary}>{cfg.summary}</Text>
             </View>
 
             <GlassCard style={styles.heroCard}>
@@ -377,19 +377,31 @@ function ReadinessRow({ label, value, good }: { label: string; value: string; go
 }
 
 const styles = StyleSheet.create({
-  scroll: { paddingHorizontal: Spacing.lg, paddingBottom: 130 },
-  brandBanner: {
-    flexDirection: 'row', alignItems: 'center', gap: 14,
-    backgroundColor: '#168253', borderRadius: Radius.lg,
-    paddingHorizontal: Spacing.md, paddingVertical: 18, marginBottom: Spacing.md,
+  scroll: { paddingHorizontal: Spacing.lg, paddingTop: Spacing.sm, paddingBottom: 130 },
+  brandHeader: {
+    backgroundColor: Colors.lavender, borderRadius: Radius.xl, overflow: 'hidden',
+    padding: Spacing.lg, marginBottom: Spacing.lg,
   },
-  brandBannerIcon: {
-    width: 46, height: 46, borderRadius: Radius.md,
-    backgroundColor: 'rgba(255,255,255,0.16)', alignItems: 'center', justifyContent: 'center',
+  glow: { position: 'absolute', borderRadius: 999 },
+  glowTop: { width: 220, height: 220, top: -120, right: -60, backgroundColor: 'rgba(159,240,196,0.22)' },
+  glowBottom: { width: 180, height: 180, bottom: -110, left: -50, backgroundColor: 'rgba(14,105,65,0.55)' },
+  brandRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  brandLogoWrap: {
+    width: 48, height: 48, borderRadius: 16,
+    backgroundColor: 'rgba(255,255,255,0.16)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.28)',
+    alignItems: 'center', justifyContent: 'center',
   },
-  brandBannerLogo: { width: 36, height: 36 },
-  brandBannerTitle: { fontSize: 17, fontWeight: '700', color: '#FFFFFF' },
-  brandBannerText: { fontSize: 13, color: 'rgba(255,255,255,0.88)', lineHeight: 18, marginTop: 4 },
+  brandLogo: { width: 34, height: 34 },
+  brandEyebrow: { fontSize: 12, fontWeight: '600', color: 'rgba(255,255,255,0.78)', letterSpacing: 0.3 },
+  brandTitle: { fontSize: 24, fontWeight: '800', color: '#FFFFFF', letterSpacing: -0.4, marginTop: 1 },
+  brandStatus: {
+    flexDirection: 'row', alignItems: 'center', gap: 6,
+    backgroundColor: 'rgba(255,255,255,0.16)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.3)',
+    borderRadius: Radius.full, paddingHorizontal: 10, paddingVertical: 6,
+  },
+  brandStatusDot: { width: 7, height: 7, borderRadius: 4 },
+  brandStatusText: { fontSize: 12, fontWeight: '700', color: '#FFFFFF' },
+  brandSummary: { fontSize: 14, lineHeight: 20, color: 'rgba(255,255,255,0.9)', marginTop: Spacing.md },
   heroCard: { marginBottom: Spacing.lg },
   heroPad: { padding: Spacing.lg },
   heroTopRow: {

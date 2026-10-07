@@ -5,6 +5,7 @@ import { captureException } from '../lib/monitoring';
 
 const CONTACTS_KEY = 'ga.contacts';
 const HISTORY_KEY = 'ga.history';
+const AI_CONSENT_KEY = 'ga.aiConsent';
 
 export interface TrustedContact {
   id: string;
@@ -31,6 +32,8 @@ export interface ThreatEvent {
 }
 
 export type AppStatus = 'safe' | 'monitoring' | 'alert' | 'sos';
+/** Whether the user agreed to send help-chat messages to the AI service. */
+export type AiConsent = 'unknown' | 'granted' | 'declined';
 
 function isStoredContact(value: unknown): value is TrustedContact {
   if (!value || typeof value !== 'object') return false;
@@ -66,6 +69,7 @@ interface AppState {
   sosActive: boolean;
   soundLevel: number;
   hydrated: boolean;
+  aiConsent: AiConsent;
 }
 
 interface AppActions {
@@ -79,6 +83,7 @@ interface AppActions {
   addThreatEvent: (e: ThreatEvent) => void;
   clearLocalData: () => Promise<void>;
   setSoundLevel: (n: number) => void;
+  setAiConsent: (c: AiConsent) => void;
 }
 
 const Ctx = createContext<(AppState & AppActions) | null>(null);
@@ -92,6 +97,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [sosActive, setSosActive] = useState(false);
   const [soundLevel, setSoundLevel] = useState(0);
   const [hydrated, setHydrated] = useState(false);
+  const [aiConsent, setAiConsentState] = useState<AiConsent>('unknown');
   const sosActiveRef = useRef(false);
 
   useEffect(() => {
@@ -101,10 +107,14 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     (async () => {
       try {
-        const [contactsResult, historyResult] = await Promise.allSettled([
+        const [contactsResult, historyResult, consentResult] = await Promise.allSettled([
           AsyncStorage.getItem(CONTACTS_KEY),
           AsyncStorage.getItem(HISTORY_KEY),
+          AsyncStorage.getItem(AI_CONSENT_KEY),
         ]);
+        if (consentResult.status === 'fulfilled' && (consentResult.value === 'granted' || consentResult.value === 'declined')) {
+          setAiConsentState(consentResult.value);
+        }
         const rawContacts = contactsResult.status === 'fulfilled' ? contactsResult.value : null;
         const rawHistory = historyResult.status === 'fulfilled' ? historyResult.value : null;
         if (contactsResult.status === 'rejected') captureException(contactsResult.reason, 'load-contacts');
@@ -216,6 +226,11 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     setThreatHistory(p => [e, ...p.slice(0, 49)]);
   }, []);
 
+  const setAiConsent = useCallback((c: AiConsent) => {
+    setAiConsentState(c);
+    AsyncStorage.setItem(AI_CONSENT_KEY, c).catch((e) => captureException(e, 'save-ai-consent'));
+  }, []);
+
   const clearLocalData = useCallback(async () => {
     try {
       await AsyncStorage.multiRemove([CONTACTS_KEY, HISTORY_KEY]);
@@ -230,10 +245,10 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   return (
     <Ctx.Provider value={{
       status, isMonitoring, location, trustedContacts,
-      threatHistory, sosActive, soundLevel, hydrated,
+      threatHistory, sosActive, soundLevel, hydrated, aiConsent,
       setStatus, toggleMonitoring, activateSOS, deactivateSOS,
       addContact, removeContact, updateLocation, addThreatEvent, clearLocalData,
-      setSoundLevel,
+      setSoundLevel, setAiConsent,
     }}>
       {children}
     </Ctx.Provider>
