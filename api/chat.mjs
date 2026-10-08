@@ -1,7 +1,7 @@
 // Vercel serverless function: proxies GuardAurora help-chat messages to Groq (OpenAI-compatible API).
 // The API key lives only in the Vercel environment (GROQ_API_KEY); conversations are not stored.
 
-const MODEL = process.env.GROQ_MODEL || 'llama-3.3-70b-versatile';
+const MODEL = process.env.GROQ_MODEL || 'openai/gpt-oss-120b';
 const MAX_MESSAGES = 12;
 const MAX_MESSAGE_CHARS = 1000;
 const RATE_LIMIT_PER_MINUTE = 8;
@@ -87,7 +87,9 @@ export default async function handler(req, res) {
           { role: 'system', content: systemPrompt(language) },
           ...messages.map(m => ({ role: m.role, content: m.text })),
         ],
-        max_tokens: 700,
+        // gpt-oss reasons before answering; keep that short and leave room for the reply.
+        reasoning_effort: 'low',
+        max_completion_tokens: 1500,
         temperature: 0.4,
       }),
     });
