@@ -28,7 +28,7 @@
 3. Запишите выданный Apple ID приложения (числовой `ascAppId`) и Apple Team ID. Добавьте `ascAppId` в `eas.json` только после создания записи. Team ID и App Store Connect API key не коммитьте; секреты храните в EAS credentials/secrets.
 4. В App Store Connect добавьте App Privacy URL `https://guard-aurora.vercel.app/privacy`, Support URL `https://guard-aurora.vercel.app/support`; подтвердите контакт `romiisromie@gmail.com`.
 5. Заполните App Privacy по фактическому release build. Контакты, записи и координаты остаются на устройстве; сторонним Maps/Phone/Messages они передаются только по выбору пользователя. Не указывайте «Data Not Collected», пока не сверили весь release build и встроенные SDK. При пустом `SENTRY_DSN` отправка Sentry отключена; если DSN будет добавлен, политику и декларацию App Privacy надо обновить. Если на Vercel задан `GROQ_API_KEY`, ИИ-чат по согласию пользователя отправляет текст сообщений в ИИ-сервис Groq: в App Privacy укажите **User Content → Other User Content**, цель **App Functionality**, не связано с личностью, без отслеживания. Apple требует явного согласия перед передачей данных стороннему ИИ (guideline 5.1.2) — оно реализовано карточкой в чате и переключателем в разделе «Право».
-6. Заполните age-rating questionnaire правдиво. «13+» — целевая аудитория владельца, а не готовая оценка Apple: Apple рассчитывает рейтинг по ответам; при необходимости можно выбрать более высокий override.
+6. Заполните age-rating questionnaire правдиво. «13+» — целевая аудитория владельца, а не готовая оценка Apple: Apple рассчитывает рейтинг по ответам; при необходимости можно выбрать более высокий override. В анкете отвечайте с учётом ИИ-чата: если есть вопросы о чат-ботах, генеративном ИИ или контенте, который создаётся без ручной модерации, — ответ «да» (ответы ИИ генерируются автоматически). Темы насилия и угроз в приложении обсуждаются только в контексте безопасности, без изображений.
 7. Загрузите минимум один настоящий скриншот iPhone для актуального 6.9-inch display. Текущие допустимые размеры включают 1320×2868, 1290×2796 и 1260×2736 px (портрет), в зависимости от поддерживаемого устройства. Скриншоты следует снять с релизного iOS-приложения, а не с веб-сайта; не изображайте несуществующие функции.
 8. Пройдите на iPhone весь release checklist ниже, затем соберите и загрузите production `.ipa` в TestFlight. Сначала проверьте TestFlight, после этого отправьте версию на App Review.
 
@@ -42,32 +42,33 @@
 
 **Subtitle**
 
-`Личная безопасность офлайн`
+`SOS, контакты и ИИ-помощник`
 
 **Promotional text**
 
-`Контакты, координаты по запросу и локальный журнал событий — под рукой. Без регистрации и облачного хранения.`
+`Большая кнопка SOS, звонок близким в одно касание, координаты по запросу и ИИ-помощник, который подскажет, что делать. Без регистрации.`
 
 **Description**
 
 ```text
-GuardAurora — офлайн-инструмент, который помогает держать важные контакты и действия под рукой.
+GuardAurora — помощник для личной безопасности: всё важное на одном экране.
 
-• Сохраняйте доверенные контакты на устройстве.
-• Отмечайте событие SOS и просматривайте локальный журнал.
-• Запрашивайте координаты вручную и при желании открывайте их в приложении карт.
-• Запускайте звонок или подготовьте SMS выбранному контакту, проверив сообщение перед отправкой.
-• При включённом мониторинге измеряйте общий уровень звука на устройстве.
-• Удаляйте локальные контакты и журнал в приложении.
+• Кнопка SOS с отменяемым трёхсекундным отсчётом отмечает событие в журнале на устройстве.
+• Тихий SOS: при включённом мониторинге три встряхивания телефона отмечают событие с коротким виброоткликом.
+• Звонок доверенным людям в одно касание прямо с главного экрана.
+• SMS близкому человеку с готовым текстом и ссылкой на ваше местоположение — вы проверяете и отправляете его сами.
+• Координаты по запросу и открытие их в приложении карт.
+• ИИ-помощник во вкладке «Помощь» подскажет, что делать в вашей ситуации. Включается только с вашего согласия; без него чат отвечает готовыми офлайн-ответами.
+• Интерфейс на русском, казахском и английском.
 
-GuardAurora не вызывает экстренные службы, не отправляет SOS автоматически и не определяет угрозы по звуку. Измерение звука не распознаёт речь или события. Приложение не заменяет экстренную помощь.
+Важно: GuardAurora не вызывает экстренные службы и не отправляет сообщения автоматически. В опасности звоните 112 или в местную экстренную службу.
 
-Учётная запись не требуется. Контакты, координаты и записи хранятся локально на устройстве. Для звонков, SMS и открытия карт используется выбранное вами системное приложение.
+Без регистрации. Контакты, координаты и журнал хранятся только на устройстве. Если вы включили ИИ-помощника, в ИИ-сервис отправляется только текст сообщений чата.
 ```
 
-**Keywords**
+**Keywords** (100 bytes max; Cyrillic letters take 2 bytes; words from the name and subtitle are indexed already)
 
-`безопасность,личная защита,SOS,контакты,координаты,помощь,журнал`
+`безопасность,тревога,112,геолокация,помощь,защита`
 
 **Primary category draft**
 
@@ -81,33 +82,41 @@ Utilities. Перепроверьте категорию по актуальны
 
 **Name:** `GuardAurora`
 
-**Subtitle:** `Offline personal safety`
+**Subtitle:** `SOS, quick call & AI help`
 
-**Promotional text:** `Keep trusted contacts, on-demand location, and a local incident log close at hand. No account or cloud storage.`
+**Promotional text:** `A big SOS button, one-tap calls to people you trust, your location on demand and an AI assistant that suggests what to do. No account needed.`
 
 **Description:**
 
 ```text
-GuardAurora is an offline companion for keeping trusted contacts and useful actions close at hand.
+GuardAurora is a personal-safety companion that keeps what matters on one screen.
 
-• Keep trusted contacts on your device.
-• Record an SOS event and review your on-device activity log.
-• Request your location when you choose, then optionally open it in a maps app.
-• Start a call or prepare an SMS to a trusted person; review the message before sending.
-• When monitoring is on, measure overall sound level on your device.
-• Delete local contacts and activity from the app.
+• An SOS button with a cancellable 3-second countdown records the event in your on-device log.
+• Silent SOS: with monitoring on, three shakes of the phone record an event with a short haptic confirmation.
+• Call the people you trust with one tap right from the home screen.
+• Text a trusted person a prepared message with a link to your location — you review and send it yourself.
+• Get your coordinates on demand and open them in a maps app.
+• The AI assistant in the Help tab suggests what to do in your situation. It is turned on only with your consent; otherwise the chat uses prepared offline answers.
+• Available in English, Russian and Kazakh.
 
-GuardAurora does not contact emergency services, send SOS messages automatically, or identify threats from sound. Sound measurement does not recognize speech or events. The app is not a replacement for emergency help.
+Important: GuardAurora does not contact emergency services or send messages automatically. If you are in danger, call 112 or your local emergency number.
 
-No account is required. Contacts, coordinates, and activity entries are stored on your device. Calls, SMS, and maps open in the system app you choose.
+No account required. Contacts, coordinates and the activity log stay on your device. If you turn on the AI assistant, only the text of your chat messages is sent to the AI service.
 ```
 
-**Keywords:** `safety,personal safety,SOS,contacts,location,offline,incident log`
+**Keywords:** `safety,emergency,panic,alarm,trusted contacts,location,shake,personal safety,112`
 
 ## App Review notes draft
 
 ```text
-GuardAurora has no sign-in or demo account. Core features work offline. The Help tab offers an optional AI assistant (Groq-hosted open model via our server): it is used only after the user taps "Allow AI" in the chat and can be turned off in the Privacy tab; only chat text is sent, never contacts, location, or the activity log. Without consent the chat uses prepared offline answers. To review microphone behavior, open the app and manually enable monitoring; the app measures overall sound level only and stops when the app moves to the background. Location permission is requested only after the user taps the location control; if it was already granted, starting SOS takes one location reading for the local SOS entry (no background tracking). SOS records a local event only; it does not call emergency services or send a message. Calls and SMS are user-initiated, and SMS requires user confirmation. Local data deletion is available under Privacy & Legal.
+GuardAurora has no sign-in or demo account; everything works without registration.
+
+- SOS: tap the red button on the Safety tab; a 3-second countdown can be cancelled. SOS only records an event in the on-device log. It does NOT call emergency services or message anyone.
+- Silent SOS: tap "Start monitoring", then shake the phone firmly three times within about 2 seconds; a haptic tap confirms the event.
+- Microphone: used only while monitoring is on and the app is in the foreground, to show the overall sound level. Audio is not recognized, stored or sent.
+- Location: requested only when the user taps "Update location" on the Map tab; if already granted, starting SOS takes one reading for the local SOS entry. No background tracking.
+- Calls and SMS open the system Phone/Messages apps; the user sends the message.
+- AI assistant (Help tab): optional. It is used only after the user taps "Allow AI" and can be turned off in the Privacy tab. Only the chat text is sent, via our server, to the Groq API; contacts, location and the log are never sent. Without consent the chat uses prepared offline answers. Try: "Someone is following me, what should I do?"
 ```
 
 ## Release checklist
