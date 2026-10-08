@@ -28,7 +28,7 @@
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/guardaurora-adaptive.png",
-        "backgroundColor": "#168253"
+        "backgroundColor": "#FFFFFF"
       },
       "package": "com.guardaurora.app",
       "permissions": [
