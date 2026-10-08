@@ -1,7 +1,7 @@
-// Vercel serverless function: proxies GuardAurora help-chat messages to Google Gemini.
-// The API key lives only in the Vercel environment (GEMINI_API_KEY); conversations are not stored.
+// Vercel serverless function: proxies GuardAurora help-chat messages to Groq (OpenAI-compatible API).
+// The API key lives only in the Vercel environment (GROQ_API_KEY); conversations are not stored.
 
-const MODEL = process.env.GEMINI_MODEL || 'gemini-flash-latest';
+const MODEL = process.env.GROQ_MODEL || 'llama-3.3-70b-versatile';
 const MAX_MESSAGES = 12;
 const MAX_MESSAGE_CHARS = 1000;
 const RATE_LIMIT_PER_MINUTE = 8;
@@ -44,10 +44,10 @@ function rateLimited(ip) {
 function parseMessages(body) {
   if (!body || !Array.isArray(body.messages)) return null;
   const messages = body.messages.slice(-MAX_MESSAGES).map(m => ({
-    role: m && m.role === 'assistant' ? 'model' : 'user',
+    role: m && m.role === 'assistant' ? 'assistant' : 'user',
     text: typeof m?.text === 'string' ? m.text.trim().slice(0, MAX_MESSAGE_CHARS) : '',
   })).filter(m => m.text);
-  // Gemini expects the conversation to start with a user turn and end with one.
+  // The conversation must start with a user turn and end with one.
   while (messages.length && messages[0].role !== 'user') messages.shift();
   if (!messages.length || messages[messages.length - 1].role !== 'user') return null;
   return messages;
@@ -60,7 +60,7 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'method_not_allowed' });
   }
 
-  const apiKey = process.env.GEMINI_API_KEY;
+  const apiKey = process.env.GROQ_API_KEY;
   if (!apiKey) return res.status(503).json({ error: 'not_configured' });
 
   const ip = String(req.headers['x-forwarded-for'] || '').split(',')[0].trim() || 'unknown';
@@ -77,33 +77,31 @@ export default async function handler(req, res) {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), UPSTREAM_TIMEOUT_MS);
   try {
-    const upstream = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(MODEL)}:generateContent`,
-      {
-        method: 'POST',
-        signal: controller.signal,
-        headers: { 'Content-Type': 'application/json', 'x-goog-api-key': apiKey },
-        body: JSON.stringify({
-          systemInstruction: { parts: [{ text: systemPrompt(language) }] },
-          contents: messages.map(m => ({ role: m.role, parts: [{ text: m.text }] })),
-          generationConfig: { maxOutputTokens: 700, temperature: 0.4 },
-        }),
-      },
-    );
+    const upstream = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+      method: 'POST',
+      signal: controller.signal,
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${apiKey}` },
+      body: JSON.stringify({
+        model: MODEL,
+        messages: [
+          { role: 'system', content: systemPrompt(language) },
+          ...messages.map(m => ({ role: m.role, content: m.text })),
+        ],
+        max_tokens: 700,
+        temperature: 0.4,
+      }),
+    });
     if (upstream.status === 429) return res.status(429).json({ error: 'rate_limited' });
     if (!upstream.ok) {
-      console.error('gemini error', upstream.status, (await upstream.text()).slice(0, 300));
+      console.error('groq error', upstream.status, (await upstream.text()).slice(0, 300));
       return res.status(502).json({ error: 'upstream_error' });
     }
     const data = await upstream.json();
-    const reply = (data?.candidates?.[0]?.content?.parts || [])
-      .map(part => part?.text || '')
-      .join('')
-      .trim();
+    const reply = String(data?.choices?.[0]?.message?.content || '').trim();
     if (!reply) return res.status(502).json({ error: 'empty_reply' });
     return res.status(200).json({ reply });
   } catch (error) {
-    console.error('gemini request failed', error?.name || error);
+    console.error('groq request failed', error?.name || error);
     return res.status(504).json({ error: 'upstream_unavailable' });
   } finally {
     clearTimeout(timer);

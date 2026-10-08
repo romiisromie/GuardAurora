@@ -142,7 +142,7 @@ export default function ChatScreen() {
               {aiConsent === 'unknown' && (
                 <View style={styles.consentCard}>
                   <Text style={styles.consentTitle}>{t('Включить ИИ-помощника?')}</Text>
-                  <Text style={styles.consentText}>{t('ИИ поможет разобраться в любой ситуации. Для этого текст ваших сообщений в чате будет отправляться через сервер GuardAurora в Google Gemini. Контакты, координаты и журнал не отправляются. Google может использовать сообщения для улучшения своих сервисов, поэтому не пишите имена, адреса и номера телефонов. Без согласия чат отвечает готовыми офлайн-ответами.')}</Text>
+                  <Text style={styles.consentText}>{t('ИИ поможет разобраться в любой ситуации. Для этого текст ваших сообщений в чате будет отправляться через сервер GuardAurora в ИИ-сервис Groq. Контакты, координаты и журнал не отправляются. Groq не хранит сообщения и не обучает на них модели, но всё равно не пишите имена, адреса и номера телефонов. Без согласия чат отвечает готовыми офлайн-ответами.')}</Text>
                   <View style={styles.consentRow}>
                     <TouchableOpacity style={styles.consentSecondary} onPress={() => setAiConsent('declined')} accessibilityRole="button">
                       <Text style={styles.consentSecondaryText}>{t('Только офлайн')}</Text>
