@@ -4,6 +4,7 @@ import {
   Animated, Vibration, Image, Platform, Linking,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { useApp } from '../store/AppContext';
 import { useAudioMonitor } from '../hooks/useAudioMonitor';
@@ -21,6 +22,9 @@ import { showAlert } from '../lib/dialog';
 
 const LOGO = require('../../assets/guardaurora-symbol.png');
 
+/** Header background per app state: green = ready, teal = monitoring, red = SOS. */
+const HEADER_COLOR = { safe: Colors.lavender, monitoring: '#0F6E7A', alert: Colors.warning, sos: Colors.danger } as const;
+
 export default function HomeScreen() {
   const { t, locale } = useLanguage();
   const {
@@ -31,6 +35,7 @@ export default function HomeScreen() {
   const { hasPermission: microphoneGranted, requestPermission } = useAudioMonitor();
   useShakeDetector();
 
+  const navigation = useNavigation<any>();
   const [countdown, setCountdown] = useState<number | null>(null);
   const measuringSound = isMonitoring && !sosActive;
   const countRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -136,7 +141,7 @@ export default function HomeScreen() {
       <SafeAreaView style={{ flex: 1 }}>
         <Animated.View style={{ flex: 1, opacity: fadeAnim }}>
           <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
-            <View style={styles.brandHeader}>
+            <View style={[styles.brandHeader, { backgroundColor: HEADER_COLOR[status] }]}>
               <View style={[styles.glow, styles.glowTop]} />
               <View style={[styles.glow, styles.glowBottom]} />
               <View style={styles.brandRow}>
@@ -144,12 +149,11 @@ export default function HomeScreen() {
                   <Image source={LOGO} style={styles.brandLogo} resizeMode="contain" />
                 </View>
                 <View style={{ flex: 1 }}>
-                  <Text style={styles.brandEyebrow}>{t('Центр безопасности')}</Text>
-                  <Text style={styles.brandTitle}>GuardAurora</Text>
-                </View>
-                <View style={styles.brandStatus} accessibilityLabel={cfg.label}>
-                  <View style={[styles.brandStatusDot, { backgroundColor: sosActive ? '#FFB3BC' : '#9FF0C4' }]} />
-                  <Text style={styles.brandStatusText}>{cfg.label}</Text>
+                  <Text style={styles.brandTitle} numberOfLines={1}>GuardAurora</Text>
+                  <View style={styles.brandStatus} accessibilityLabel={cfg.label}>
+                    <View style={[styles.brandStatusDot, { backgroundColor: sosActive ? '#FFB3BC' : '#9FF0C4' }]} />
+                    <Text style={styles.brandStatusText}>{cfg.label}</Text>
+                  </View>
                 </View>
               </View>
             </View>
@@ -163,7 +167,7 @@ export default function HomeScreen() {
                   accessibilityLabel={sosActive ? t('Остановить локальный режим SOS') : t('Запустить локальный SOS')}
                   accessibilityHint={sosActive ? t('Попросит подтвердить остановку') : t('Запускает трёхсекундный отсчёт')}
                 >
-                  <PulseRing color={Colors.danger} size={168} active={false}>
+                  <PulseRing color={Colors.danger} size={150} active={sosActive || countdown !== null}>
                     {countdown !== null ? (
                       <Text style={styles.countdownNum}>{countdown}</Text>
                     ) : (
@@ -194,6 +198,32 @@ export default function HomeScreen() {
                 ) : null}
               </View>
             </GlassCard>
+
+            <View style={styles.quickRow}>
+              {trustedContacts.slice(0, 4).map(contact => (
+                <TouchableOpacity
+                  key={contact.id}
+                  style={styles.quickItem}
+                  onPress={() => { void Linking.openURL(`tel:${contact.phone}`).catch(() => showAlert(t('Звонок недоступен'), t('Не удалось открыть приложение телефона.'))); }}
+                  accessibilityRole="button"
+                  accessibilityLabel={`${t('Позвонить')} ${contact.name}`}
+                >
+                  <View style={styles.quickAvatar}>
+                    <Text style={styles.quickInitial}>{contact.name.trim().charAt(0).toUpperCase()}</Text>
+                    <View style={styles.quickBadge}><Ionicons name="call" size={11} color="#FFFFFF" /></View>
+                  </View>
+                  <Text style={styles.quickName} numberOfLines={1}>{contact.name.trim().split(/\s+/)[0]}</Text>
+                </TouchableOpacity>
+              ))}
+              {trustedContacts.length < 4 ? (
+                <TouchableOpacity style={styles.quickItem} onPress={() => navigation.navigate('Contacts')} accessibilityRole="button" accessibilityLabel={t('+ Добавить контакт')}>
+                  <View style={[styles.quickAvatar, styles.quickAdd]}>
+                    <Ionicons name="add" size={24} color={Colors.lavender} />
+                  </View>
+                  <Text style={styles.quickName} numberOfLines={1}>{t('Добавить')}</Text>
+                </TouchableOpacity>
+              ) : null}
+            </View>
 
             <GradientButton
               label={isMonitoring ? t('Остановить мониторинг') : t('Запустить мониторинг')}
@@ -257,7 +287,7 @@ const styles = StyleSheet.create({
   },
   glow: { position: 'absolute', borderRadius: 999 },
   glowTop: { width: 220, height: 220, top: -120, right: -60, backgroundColor: 'rgba(159,240,196,0.22)' },
-  glowBottom: { width: 180, height: 180, bottom: -110, left: -50, backgroundColor: 'rgba(14,105,65,0.55)' },
+  glowBottom: { width: 180, height: 180, bottom: -110, left: -50, backgroundColor: 'rgba(0,0,0,0.14)' },
   brandRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   brandLogoWrap: {
     width: 48, height: 48, borderRadius: 16,
@@ -268,7 +298,7 @@ const styles = StyleSheet.create({
   brandEyebrow: { fontSize: 12, fontWeight: '600', color: 'rgba(255,255,255,0.78)', letterSpacing: 0.3 },
   brandTitle: { fontSize: 24, fontWeight: '800', color: '#FFFFFF', letterSpacing: -0.4, marginTop: 1 },
   brandStatus: {
-    flexDirection: 'row', alignItems: 'center', gap: 6,
+    flexDirection: 'row', alignItems: 'center', gap: 6, alignSelf: 'flex-start', marginTop: 6,
     backgroundColor: 'rgba(255,255,255,0.16)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.3)',
     borderRadius: Radius.full, paddingHorizontal: 10, paddingVertical: 6,
   },
@@ -339,6 +369,19 @@ const styles = StyleSheet.create({
   metricLabel: { fontSize: 12, fontWeight: '700', color: Colors.white },
   metricHint: { fontSize: 11, color: Colors.textMuted },
   primaryAction: { marginBottom: Spacing.lg },
+  quickRow: { flexDirection: 'row', gap: 12, marginBottom: Spacing.lg },
+  quickItem: { width: 68, alignItems: 'center', gap: 6 },
+  quickAvatar: {
+    width: 56, height: 56, borderRadius: 28, backgroundColor: Colors.lavenderGlow,
+    borderWidth: 1, borderColor: `${Colors.lavender}40`, alignItems: 'center', justifyContent: 'center',
+  },
+  quickAdd: { backgroundColor: Colors.bgCard, borderStyle: 'dashed', borderColor: Colors.borderStrong },
+  quickInitial: { fontSize: 20, fontWeight: '700', color: Colors.lavender },
+  quickBadge: {
+    position: 'absolute', right: -2, bottom: -2, width: 20, height: 20, borderRadius: 10,
+    backgroundColor: Colors.mint, borderWidth: 2, borderColor: Colors.bg, alignItems: 'center', justifyContent: 'center',
+  },
+  quickName: { fontSize: 12, fontWeight: '600', color: Colors.textSecondary, maxWidth: 68 },
   quickActionRow: { flexDirection: 'row', gap: 10, marginBottom: Spacing.lg },
   quickAction: {
     flex: 1,

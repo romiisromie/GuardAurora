@@ -1,7 +1,7 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import {
   View, Text, TouchableOpacity, StyleSheet, ViewStyle, ActivityIndicator,
-  StyleProp,
+  StyleProp, Animated, Easing,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors, Radius, Spacing } from '../theme';
@@ -46,10 +46,40 @@ export function GradientButton({ label, onPress, colors = Colors.gradPrimary, st
   </TouchableOpacity>;
 }
 
-export function PulseRing({ color = Colors.danger, size = 116, children }: {
+/** Round button face that slowly "breathes" with an expanding halo; `active` speeds the pulse up. */
+export function PulseRing({ color = Colors.danger, size = 116, active = false, children }: {
   color?: string; size?: number; active?: boolean; children?: React.ReactNode;
 }) {
-  return <View style={{ width: size, height: size, borderRadius: size / 2, backgroundColor: color, alignItems: 'center', justifyContent: 'center', padding: 12 }}>{children}</View>;
+  const halo = useRef(new Animated.Value(0)).current;
+  const breath = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    halo.setValue(0);
+    breath.setValue(0);
+    const haloLoop = Animated.loop(Animated.timing(halo, {
+      toValue: 1, duration: active ? 900 : 2400, easing: Easing.out(Easing.quad), useNativeDriver: true,
+    }));
+    const breathLoop = Animated.loop(Animated.sequence([
+      Animated.timing(breath, { toValue: 1, duration: active ? 450 : 1600, easing: Easing.inOut(Easing.sin), useNativeDriver: true }),
+      Animated.timing(breath, { toValue: 0, duration: active ? 450 : 1600, easing: Easing.inOut(Easing.sin), useNativeDriver: true }),
+    ]));
+    haloLoop.start();
+    breathLoop.start();
+    return () => { haloLoop.stop(); breathLoop.stop(); };
+  }, [active, halo, breath]);
+
+  const circle = { width: size, height: size, borderRadius: size / 2 };
+  return <View style={{ width: size * 1.4, height: size * 1.4, alignItems: 'center', justifyContent: 'center' }}>
+    <Animated.View pointerEvents="none" style={[circle, {
+      position: 'absolute', backgroundColor: color,
+      opacity: halo.interpolate({ inputRange: [0, 1], outputRange: [active ? 0.45 : 0.28, 0] }),
+      transform: [{ scale: halo.interpolate({ inputRange: [0, 1], outputRange: [1, 1.4] }) }],
+    }]} />
+    <Animated.View style={[circle, {
+      backgroundColor: color, alignItems: 'center', justifyContent: 'center', padding: 12,
+      transform: [{ scale: breath.interpolate({ inputRange: [0, 1], outputRange: [1, active ? 1.05 : 1.03] }) }],
+    }]}>{children}</Animated.View>
+  </View>;
 }
 
 export function SoundWave({ level }: { level: number; color?: string; barCount?: number }) {
