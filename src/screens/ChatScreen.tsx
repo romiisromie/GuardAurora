@@ -135,7 +135,7 @@ export default function ChatScreen() {
                     <Text style={[styles.bubbleText, m.role === 'user' ? styles.textUser : styles.textAI]}>
                       {m.text}
                     </Text>
-                    <Text style={styles.bubbleTime}>{fmt(m.ts)}</Text>
+                    <Text style={[styles.bubbleTime, m.role === 'user' && styles.bubbleTimeUser]}>{fmt(m.ts)}</Text>
                   </View>
                 </View>
               ))}
@@ -277,9 +277,10 @@ const styles = StyleSheet.create({
   bubbleUser: { backgroundColor: Colors.lavender, borderBottomRightRadius: 4 },
   bubbleAI: { backgroundColor: Colors.bgCardLight, borderBottomLeftRadius: 4, borderWidth: 1, borderColor: Colors.border },
   bubbleText: { fontSize: 15, lineHeight: 22 },
-  textUser: { color: Colors.white },
+  textUser: { color: '#FFFFFF' },
   textAI: { color: Colors.white },
   bubbleTime: { fontSize: 10, color: Colors.textMuted, marginTop: 5, alignSelf: 'flex-end' },
+  bubbleTimeUser: { color: 'rgba(255,255,255,0.75)' },
   quickWrap: { marginBottom: 8 },
   quickScroll: { marginBottom: 8 },
   consentCard: {
