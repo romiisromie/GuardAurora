@@ -3,27 +3,18 @@ import { View, Text, StyleSheet, ScrollView, Animated } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useApp, ThreatEvent } from '../store/AppContext';
-import { GlassCard, StatusBadge, ScreenHeader, SectionTitle } from '../components/ui';
+import { GlassCard, ScreenHeader } from '../components/ui';
 import { Colors, Spacing, Radius } from '../theme';
 import { useLanguage } from '../i18n';
 
 const EVENT_CFG = {
-  sound:  { icon: '🎙', label: 'Измерение звука', color: Colors.warning },
-  manual: { icon: '🚨', label: 'Ручной SOS',      color: Colors.danger },
-  shake:  { icon: '📳', label: 'Тихий SOS',        color: Colors.rose },
-};
-const LEVEL_COLOR = { low: Colors.mint, medium: Colors.warning, high: Colors.danger };
-const LEVEL_LABEL = { low: 'Низкий', medium: 'Средний', high: 'Высокий' };
-
-const TIPS = [
-  { icon: '📳', t: 'Тихий SOS', d: 'Три быстрых встряхивания при включённом мониторинге отмечают событие локально; контакты и службы не получают уведомления' },
-  { icon: '🔋', t: 'Заряд батареи', d: 'Следи за зарядом, чтобы телефон оставался доступен для звонков' },
-  { icon: '📡', t: 'Интернет', d: 'Координаты запрашиваются у системы геолокации; чат отвечает локально' },
-  { icon: '👥', t: 'Контакты', d: 'Добавь 2–3 доверенных человека с разными операторами' },
-];
+  sound:  { icon: 'volume-high', label: 'Измерение звука', color: Colors.warning },
+  manual: { icon: 'warning',     label: 'Ручной SOS',      color: Colors.danger },
+  shake:  { icon: 'phone-portrait', label: 'Тихий SOS',    color: Colors.rose },
+} as const;
 
 export default function HistoryScreen() {
-  const { threatHistory, isMonitoring, trustedContacts } = useApp();
+  const { threatHistory } = useApp();
   const { t, locale } = useLanguage();
   const fadeAnim = useRef(new Animated.Value(0)).current;
 
@@ -41,74 +32,35 @@ export default function HistoryScreen() {
         <Animated.View style={[{ flex: 1 }, { opacity: fadeAnim }]}>
 
           <ScreenHeader
-            eyebrow={t('История защиты')}
             title={t('Журнал событий')}
-            subtitle={`${threatHistory.length} ${t('записей в истории защиты')}`}
           />
 
           <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
 
-            {/* Stats */}
-            <View style={styles.statsRow}>
-              {[
-                { num: threatHistory.filter(e => e.type === 'manual').length, label: t('Ручной SOS'), icon: '🚨', color: Colors.rose },
-                { num: threatHistory.filter(e => e.type === 'shake').length, label: t('Тихий SOS'), icon: '📳', color: Colors.warning },
-                { num: trustedContacts.length, label: t('Контакты'), icon: '👥', color: Colors.mint },
-              ].map((s, i) => (
-                <GlassCard key={i} style={styles.statCard} accentColor={s.color}>
-                  <View style={styles.statInner}>
-                    <Text style={{ fontSize: 22 }}>{s.icon}</Text>
-                    <Text style={styles.statNum}>{s.num}</Text>
-                    <Text style={styles.statLabel}>{s.label}</Text>
-                  </View>
-                </GlassCard>
-              ))}
-            </View>
-
-            {/* Monitoring badge */}
-            {isMonitoring && (
-              <GlassCard style={styles.sessionCard} accentColor={Colors.lavender}>
-                <View style={styles.sessionRow}>
-                  <Text style={{ fontSize: 26 }}>👁️</Text>
-                  <View style={{ flex: 1 }}>
-                    <Text style={styles.sessionTitle}>{t('Сессия мониторинга активна')}</Text>
-                    <Text style={styles.sessionSub}>{t('Локально измеряется уровень звука; угрозы не распознаются')}</Text>
-                  </View>
-                  <StatusBadge label={t('Активно')} color={Colors.lavender} />
-                </View>
-              </GlassCard>
-            )}
-
             {/* Events */}
             {threatHistory.length === 0 ? (
               <View style={styles.empty}>
-                <Text style={{ fontSize: 60 }}>📋</Text>
+                <Ionicons name="time-outline" size={44} color={Colors.textMuted} />
                 <Text style={styles.emptyTitle}>{t('Журнал пуст')}</Text>
                 <Text style={styles.emptyDesc}>
-                  {t('Здесь появятся локальные сигналы SOS. Автоматического распознавания угроз нет.')}
+                  {t('Здесь появятся отметки SOS.')}
                 </Text>
               </View>
             ) : (
               <>
-                <SectionTitle label={t('Последние события')} />
                 {threatHistory.map(e => {
                   const cfg = EVENT_CFG[e.type];
                   return (
                     <GlassCard key={e.id} style={styles.eventCard} accentColor={cfg.color}>
                       <View style={styles.eventRow}>
                         <View style={[styles.eventIconCircle, { backgroundColor: `${cfg.color}18` }]}>
-                          <Text style={{ fontSize: 22 }}>{cfg.icon}</Text>
+                          <Ionicons name={cfg.icon} size={20} color={cfg.color} />
                         </View>
                         <View style={{ flex: 1 }}>
                           <Text style={styles.eventTitle}>{t(cfg.label)}</Text>
                           <Text style={styles.eventTime}>{fmt(e.timestamp)}</Text>
                         </View>
                         <View style={{ alignItems: 'flex-end', gap: 4 }}>
-                          <View style={[styles.levelTag, { backgroundColor: `${LEVEL_COLOR[e.level]}18` }]}>
-                            <Text style={[styles.levelText, { color: LEVEL_COLOR[e.level] }]}>
-                              {t(LEVEL_LABEL[e.level])}
-                            </Text>
-                          </View>
                           {e.resolved && (
                             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3 }}>
                               <Ionicons name="checkmark-circle" size={13} color={Colors.mint} />
@@ -122,20 +74,6 @@ export default function HistoryScreen() {
                 })}
               </>
             )}
-
-            {/* Tips */}
-            <SectionTitle label={t('Советы безопасности')} />
-            {TIPS.map((tip, i) => (
-              <GlassCard key={i} style={styles.tipCard}>
-                <View style={styles.tipRow}>
-                  <Text style={{ fontSize: 22 }}>{tip.icon}</Text>
-                  <View style={{ flex: 1 }}>
-                    <Text style={styles.tipTitle}>{t(tip.t)}</Text>
-                    <Text style={styles.tipDesc}>{t(tip.d)}</Text>
-                  </View>
-                </View>
-              </GlassCard>
-            ))}
 
           </ScrollView>
         </Animated.View>

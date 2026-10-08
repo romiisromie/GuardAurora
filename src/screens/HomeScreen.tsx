@@ -11,7 +11,6 @@ import { useShakeDetector } from '../hooks/useShakeDetector';
 import {
   GlassCard,
   PulseRing,
-  SoundWave,
   ThreatMeter,
   GradientButton,
   SectionTitle,
@@ -153,73 +152,46 @@ export default function HomeScreen() {
                   <Text style={styles.brandStatusText}>{cfg.label}</Text>
                 </View>
               </View>
-              <Text style={styles.brandSummary}>{cfg.summary}</Text>
             </View>
 
             <GlassCard style={styles.heroCard}>
-              <View style={styles.heroPad}>
-                <View style={styles.heroTopRow}>
-                  <View style={styles.heroBrand}>
-                    <View style={styles.logoWrap}>
-                      <Image source={LOGO} style={styles.logo} resizeMode="contain" />
-                    </View>
-                    <View style={{ flex: 1 }}>
-                      <Text style={styles.heroTitle}>{t('Инструменты безопасности')}</Text>
-                      <Text style={styles.heroSubtitle}>{t('Локальный SOS и тихий сигнал по трём встряхиваниям при включённом мониторинге.')}</Text>
-                    </View>
-                  </View>
-                  <View style={[styles.livePill, { borderColor: `${cfg.color}55`, backgroundColor: `${cfg.color}14` }]}>
-                    <View style={[styles.liveDot, { backgroundColor: cfg.color }]} />
-                    <Text style={[styles.liveText, { color: cfg.color }]}>{sosActive ? 'SOS' : isMonitoring ? t('МОНИТОРИНГ') : t('ГОТОВО')}</Text>
-                  </View>
-                </View>
+              <View style={styles.sosSection}>
+                <TouchableOpacity
+                  onPress={handleSOS}
+                  activeOpacity={0.9}
+                  accessibilityRole="button"
+                  accessibilityLabel={sosActive ? t('Остановить локальный режим SOS') : t('Запустить локальный SOS')}
+                  accessibilityHint={sosActive ? t('Попросит подтвердить остановку') : t('Запускает трёхсекундный отсчёт')}
+                >
+                  <PulseRing color={Colors.danger} size={168} active={false}>
+                    {countdown !== null ? (
+                      <Text style={styles.countdownNum}>{countdown}</Text>
+                    ) : (
+                      <View style={styles.shieldInner}>
+                        <Ionicons name={sosActive ? 'stop-circle' : 'warning'} size={34} color="#FFFFFF" />
+                        <Text style={styles.sosLabel}>{sosActive ? t('Остановить SOS') : 'SOS'}</Text>
+                      </View>
+                    )}
+                  </PulseRing>
+                </TouchableOpacity>
+                <Text style={styles.sosNote}>
+                  {sosActive ? t('SOS отмечен в журнале на устройстве') : t('SOS не вызывает службы и не отправляет сообщения')}
+                </Text>
 
-                <View style={styles.sosSection}>
-                  <TouchableOpacity
-                    onPress={handleSOS}
-                    activeOpacity={0.9}
-                    accessibilityRole="button"
-                    accessibilityLabel={sosActive ? t('Остановить локальный режим SOS') : t('Запустить локальный SOS')}
-                    accessibilityHint={sosActive ? t('Попросит подтвердить остановку') : t('Запускает трёхсекундный отсчёт')}
-                  >
-                    <View>
-                      <PulseRing color={Colors.danger} size={150} active={false}>
-                        {countdown !== null ? (
-                        <Text style={styles.countdownNum}>{countdown}</Text>
-                        ) : (
-                          <View style={styles.shieldInner}>
-                            <Ionicons name={sosActive ? 'stop-circle' : 'warning'} size={30} color="#FFFFFF" />
-                            <Text style={styles.sosLabel}>{sosActive ? t('Остановить SOS') : t('Нажмите для SOS')}</Text>
-                            <Text style={styles.sosSubLabel}>
-                              {sosActive ? t('SOS отмечен в журнале на устройстве') : t('SOS не вызывает службы и не отправляет сообщения')}
-                            </Text>
-                          </View>
-                        )}
-                      </PulseRing>
-                    </View>
+                {countdown !== null ? (
+                  <TouchableOpacity style={styles.cancelBtn} onPress={cancelCountdown}>
+                    <Text style={styles.cancelText}>{t('Отменить запуск')}</Text>
                   </TouchableOpacity>
-
-                  {countdown !== null ? (
-                    <TouchableOpacity style={styles.cancelBtn} onPress={cancelCountdown}>
-                      <Text style={styles.cancelText}>{t('Отменить запуск')}</Text>
-                    </TouchableOpacity>
-                  ) : null}
-                  {sosActive && trustedContacts[0] ? (
-                    <GradientButton
-                      label={`${t('Позвонить:')} ${trustedContacts[0].name}`}
-                      onPress={callTrustedContact}
-                      colors={Colors.gradMint}
-                      size="md"
-                      style={{ marginTop: Spacing.md }}
-                    />
-                  ) : null}
-                </View>
-
-                <View style={styles.metricRow}>
-                  <MetricCard label="Контакты" value={String(trustedContacts.length)} hint="сохранены на устройстве" icon="people-outline" />
-                  <MetricCard label="Уровень звука" value={microphoneGranted ? `${soundLevel}%` : '—'} hint={microphoneGranted ? 'микрофон, локально' : 'нужен доступ к микрофону'} icon="pulse-outline" />
-                  <MetricCard label="События" value={String(threatHistory.length)} hint="в журнале" icon="time-outline" />
-                </View>
+                ) : null}
+                {sosActive && trustedContacts[0] ? (
+                  <GradientButton
+                    label={`${t('Позвонить:')} ${trustedContacts[0].name}`}
+                    onPress={callTrustedContact}
+                    colors={Colors.gradMint}
+                    size="md"
+                    style={{ marginTop: Spacing.md, alignSelf: 'stretch' }}
+                  />
+                ) : null}
               </View>
             </GlassCard>
 
@@ -231,64 +203,21 @@ export default function HomeScreen() {
               size="lg"
             />
 
-            <View style={styles.quickActionRow}>
-              <QuickAction icon="mic-outline" label={measuringSound ? (microphoneGranted ? t('Звук: локально') : t('Микрофон запрещён')) : t('Звук: выключен')} color={Colors.rose} />
-              <QuickAction icon="navigate-outline" label={t('GPS: по запросу')} color={Colors.cyan} />
-              <QuickAction icon="flash-outline" label={isMonitoring ? t('Тихий SOS: готов') : t('Включите мониторинг')} color={Colors.gold} />
-            </View>
-
-            <GlassCard style={styles.card}>
-              <View style={styles.cardPad}>
-                <SectionTitle label={t('Уровень окружающего звука')} />
-                <ThreatMeter score={soundLevel} />
-                <View style={styles.audioBlock}>
-                  <View>
-                    <Text style={styles.cardTitle}>{t('Локальный измеритель звука')}</Text>
-                    <Text style={styles.cardSub}>
-                      {isMonitoring
-                        ? microphoneGranted
-                          ? t('Микрофон измеряет общий уровень звука, пока приложение открыто. Распознавания угроз нет.')
-                          : t('Доступ к микрофону не предоставлен, поэтому уровень звука не измеряется. Тихий SOS доступен отдельно.')
-                        : t('При включении можно разрешить измерение общего уровня звука. Угрозы не распознаются.')}
-                    </Text>
-                  </View>
-                  <SoundWave level={soundLevel} color={Colors.lavender} />
-                </View>
-              </View>
-            </GlassCard>
-
-            <View style={styles.dualRow}>
-              <GlassCard style={[styles.sideCard, styles.guidanceCard]}>
+            {measuringSound ? (
+              <GlassCard style={styles.card}>
                 <View style={styles.cardPad}>
-                <SectionTitle label={t('Протокол действий')} />
-                  {[
-                    t('Откройте карты телефона, чтобы найти людное место рядом.'),
-                    t('При угрозе нажмите SOS и дождитесь окончания отсчёта.'),
-                    t('Используйте встряхивание телефона для тихого сигнала.'),
-                  ].map((item) => (
-                    <View key={item} style={styles.bulletRow}>
-                      <View style={styles.bullet} />
-                      <Text style={styles.bulletText}>{item}</Text>
-                    </View>
-                  ))}
+                  <SectionTitle label={t('Уровень окружающего звука')} />
+                  {microphoneGranted ? <ThreatMeter score={soundLevel} /> : <Text style={styles.cardSub}>{t('Нет доступа к микрофону')}</Text>}
+                  <Text style={[styles.cardSub, { marginTop: Spacing.md }]}>{t('Тихий SOS: готов')}</Text>
                 </View>
               </GlassCard>
-
-              <GlassCard style={styles.sideCard}>
-                <View style={styles.cardPad}>
-                  <SectionTitle label={t('Готовность системы')} />
-                  <ReadinessRow label={t('Доверенные контакты')} value={trustedContacts.length > 0 ? t('Настроено') : t('Не настроено')} good={trustedContacts.length > 0} />
-                  <ReadinessRow label={t('Мониторинг на экране')} value={isMonitoring ? t('Включён') : t('Отключен')} good={isMonitoring} />
-                  <ReadinessRow label={t('Локальная отметка SOS')} value={sosActive ? t('Активна') : t('Ожидание')} good />
-                </View>
-              </GlassCard>
-            </View>
+            ) : null}
 
             <GlassCard style={styles.card}>
               <View style={styles.cardPad}>
                 <SectionTitle label={t('Последняя активность')} />
                 {recentIncidents.length === 0 ? (
-                  <Text style={styles.emptyText}>{t('Пока событий нет. Это хороший знак: система в режиме готовности.')}</Text>
+                  <Text style={styles.emptyText}>{t('Пока событий нет.')}</Text>
                 ) : (
                   recentIncidents.map((event) => (
                     <View key={event.id} style={styles.eventRow}>
@@ -296,7 +225,7 @@ export default function HomeScreen() {
                         <Ionicons
                           name={event.type === 'manual' ? 'warning' : event.type === 'shake' ? 'phone-portrait' : 'volume-high'}
                           size={16}
-                          color={event.level === 'high' ? Colors.danger : event.level === 'medium' ? Colors.warning : Colors.mint}
+                          color={Colors.danger}
                         />
                       </View>
                       <View style={{ flex: 1 }}>
@@ -307,12 +236,7 @@ export default function HomeScreen() {
                           {new Date(event.timestamp).toLocaleString(locale, { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}
                         </Text>
                       </View>
-                      <Text style={[
-                        styles.eventBadge,
-                        { color: event.level === 'high' ? Colors.danger : event.level === 'medium' ? Colors.warning : Colors.mint },
-                      ]}>
-                        {t(event.level === 'low' ? 'Низкий' : event.level === 'medium' ? 'Средний' : 'Высокий').toUpperCase()}
-                      </Text>
+                      {event.resolved ? <Ionicons name="checkmark-circle" size={16} color={Colors.mint} /> : null}
                     </View>
                   ))
                 )}
@@ -321,57 +245,6 @@ export default function HomeScreen() {
           </ScrollView>
         </Animated.View>
       </SafeAreaView>
-    </View>
-  );
-}
-
-function MetricCard({
-  label,
-  value,
-  hint,
-  icon,
-}: {
-  label: string;
-  value: string;
-  hint: string;
-  icon: keyof typeof Ionicons.glyphMap;
-}) {
-  const { t } = useLanguage();
-  return (
-    <View style={styles.metricCard}>
-      <Ionicons name={icon} size={16} color={Colors.textSecondary} />
-      <Text style={styles.metricValue}>{value}</Text>
-      <Text style={styles.metricLabel}>{t(label)}</Text>
-      <Text style={styles.metricHint}>{t(hint)}</Text>
-    </View>
-  );
-}
-
-function QuickAction({
-  icon,
-  label,
-  color,
-}: {
-  icon: keyof typeof Ionicons.glyphMap;
-  label: string;
-  color: string;
-}) {
-  return (
-    <View style={styles.quickAction}>
-      <View style={[styles.quickIcon, { backgroundColor: `${color}18` }]}>
-        <Ionicons name={icon} size={16} color={color} />
-      </View>
-      <Text style={styles.quickText}>{label}</Text>
-    </View>
-  );
-}
-
-function ReadinessRow({ label, value, good }: { label: string; value: string; good: string | boolean }) {
-  const ok = Boolean(good);
-  return (
-    <View style={styles.readinessRow}>
-      <Text style={styles.readinessLabel}>{label}</Text>
-      <Text style={[styles.readinessValue, { color: ok ? Colors.mint : Colors.warning }]}>{value}</Text>
     </View>
   );
 }
@@ -403,6 +276,7 @@ const styles = StyleSheet.create({
   brandStatusText: { fontSize: 12, fontWeight: '700', color: '#FFFFFF' },
   brandSummary: { fontSize: 14, lineHeight: 20, color: 'rgba(255,255,255,0.9)', marginTop: Spacing.md },
   heroCard: { marginBottom: Spacing.lg },
+  sosNote: { fontSize: 12, color: Colors.textMuted, textAlign: 'center', marginTop: Spacing.md },
   heroPad: { padding: Spacing.lg },
   heroTopRow: {
     flexDirection: 'row',
@@ -436,9 +310,9 @@ const styles = StyleSheet.create({
   },
   liveDot: { width: 8, height: 8, borderRadius: 4 },
   liveText: { fontSize: 11, fontWeight: '800', letterSpacing: 0.8 },
-  sosSection: { alignItems: 'center', marginBottom: Spacing.lg },
+  sosSection: { alignItems: 'center', padding: Spacing.lg },
   shieldInner: { alignItems: 'center', gap: 6 },
-  sosLabel: { fontSize: 15, fontWeight: '700', color: '#FFFFFF', textAlign: 'center' },
+  sosLabel: { fontSize: 20, fontWeight: '800', color: '#FFFFFF', textAlign: 'center', letterSpacing: 0.5 },
   sosSubLabel: { fontSize: 10, color: 'rgba(255,255,255,0.9)', textAlign: 'center', maxWidth: 116, lineHeight: 14 },
   countdownNum: { fontSize: 56, fontWeight: '800', color: '#FFFFFF', lineHeight: 62 },
   cancelBtn: {

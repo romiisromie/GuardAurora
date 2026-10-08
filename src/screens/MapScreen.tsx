@@ -38,9 +38,7 @@ export default function MapScreen() {
     <View style={{ flex: 1, backgroundColor: Colors.bg }}>
       <SafeAreaView style={{ flex: 1 }}>
         <ScreenHeader
-          eyebrow={t('Местоположение')}
           title={t('Карта')}
-          subtitle={t('Получите координаты телефона и откройте их в установленном приложении карт.')}
         />
         <ScrollView contentContainerStyle={styles.scroll}>
           <GlassCard style={styles.card} accentColor={Colors.cyan}>
@@ -77,14 +75,6 @@ export default function MapScreen() {
             colors={Colors.gradPrimary}
             size="lg"
           />
-          <GlassCard style={styles.note} accentColor={Colors.gold}>
-            <View style={styles.noteRow}>
-              <Ionicons name="information-circle-outline" size={22} color={Colors.gold} />
-              <Text style={styles.detail}>
-                {t('Приложение не содержит базы безопасных мест и не оценивает маршруты. В экстренной ситуации свяжитесь с местной службой помощи.')}
-              </Text>
-            </View>
-          </GlassCard>
         </ScrollView>
       </SafeAreaView>
     </View>

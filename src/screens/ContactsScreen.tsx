@@ -12,7 +12,6 @@ import { useLanguage } from '../i18n';
 import { showAlert } from '../lib/dialog';
 
 const RELATIONS = ['Семья', 'Подруга', 'Друг', 'Партнёр', 'Коллега', 'Сосед'];
-const AVATARS = ['👩', '👨', '👩‍👧', '👴', '👵', '🧑', '👩‍🦱', '👨‍🦳', '👧', '🧒'];
 const REL_COLORS: Record<string, string> = {
   Семья: Colors.rose, Подруга: Colors.lavender, Друг: Colors.mint,
   Партнёр: Colors.gold, Коллега: Colors.lavender, Сосед: Colors.mint,
@@ -25,7 +24,6 @@ export default function ContactsScreen() {
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
   const [relation, setRelation] = useState('Семья');
-  const [avatar, setAvatar] = useState('👩');
   const fadeAnim = useRef(new Animated.Value(0)).current;
 
   React.useEffect(() => {
@@ -33,7 +31,7 @@ export default function ContactsScreen() {
   }, []);
 
   const openModal = () => {
-    setName(''); setPhone(''); setRelation('Семья'); setAvatar('👩');
+    setName(''); setPhone(''); setRelation('Семья');
     setModalOpen(true);
   };
 
@@ -48,7 +46,7 @@ export default function ContactsScreen() {
       showAlert(t('Проверьте данные'), t('Укажите имя до 80 символов и номер телефона, содержащий от 7 до 15 цифр.'));
       return;
     }
-    addContact({ id: Date.now().toString(), name: name.trim(), phone: normalizedPhone, relation, avatar });
+    addContact({ id: Date.now().toString(), name: name.trim(), phone: normalizedPhone, relation, avatar: '' });
     setModalOpen(false);
   };
 
@@ -84,9 +82,7 @@ export default function ContactsScreen() {
         <Animated.View style={[{ flex: 1 }, { opacity: fadeAnim }]}>
 
           <ScreenHeader
-            eyebrow={t('Доверенные лица')}
             title={t('Доверенные лица')}
-            subtitle={t('Сохранены только на этом устройстве. Свяжитесь с ними вручную.')}
             right={
               <TouchableOpacity style={styles.addBtn} onPress={openModal}>
                 <Ionicons name="add" size={22} color={Colors.white} />
@@ -95,38 +91,11 @@ export default function ContactsScreen() {
           />
 
           <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
-            <View style={styles.topStats}>
-              <GlassCard style={styles.topStatCard} accentColor={Colors.lavender}>
-                <View style={styles.topStatInner}>
-                  <Text style={styles.topStatNum}>{trustedContacts.length}</Text>
-                  <Text style={styles.topStatLabel}>{t('активных контактов')}</Text>
-                </View>
-              </GlassCard>
-              <GlassCard style={styles.topStatCard} accentColor={Colors.rose}>
-                <View style={styles.topStatInner}>
-                  <Text style={styles.topStatNum}>{t('Локально')}</Text>
-                  <Text style={styles.topStatLabel}>{t('без автосообщений')}</Text>
-                </View>
-              </GlassCard>
-            </View>
-
-            <GlassCard style={styles.banner} accentColor={Colors.rose}>
-              <View style={styles.bannerRow}>
-                <Text style={{ fontSize: 28 }}>📱</Text>
-                <View style={{ flex: 1 }}>
-                  <Text style={styles.bannerTitle}>{t('При активации SOS')}</Text>
-                  <Text style={styles.bannerDesc}>{t('SOS не отправляет уведомления. Позвоните контакту вручную из его карточки.')}</Text>
-                </View>
-              </View>
-            </GlassCard>
-
-            <SectionTitle label={t('Список контактов')} />
-
             {trustedContacts.length === 0 ? (
               <View style={styles.empty}>
-                <Text style={{ fontSize: 60 }}>👥</Text>
+                <Ionicons name="people-outline" size={44} color={Colors.textMuted} />
                 <Text style={styles.emptyTitle}>{t('Нет контактов')}</Text>
-                <Text style={styles.emptyDesc}>{t('Добавьте людей, которым сможете позвонить вручную. Автоматические SOS-сообщения не отправляются.')}</Text>
+                <Text style={styles.emptyDesc}>{t('Добавьте людей, которым позвоните или напишете при опасности.')}</Text>
               </View>
             ) : (
               trustedContacts.map(c => {
@@ -135,7 +104,7 @@ export default function ContactsScreen() {
                   <GlassCard key={c.id} style={styles.contactCard} accentColor={color}>
                     <View style={styles.contactRow}>
                       <View style={[styles.ava, { backgroundColor: `${color}18`, borderColor: `${color}50` }]}>
-                        <Text style={{ fontSize: 24 }}>{c.avatar}</Text>
+                        <Text style={[styles.initial, { color }]}>{c.name.trim().charAt(0).toUpperCase()}</Text>
                       </View>
                       <View style={{ flex: 1 }}>
                         <Text style={styles.contactName}>{c.name}</Text>
@@ -187,19 +156,6 @@ export default function ContactsScreen() {
             <View style={styles.handle} />
             <Text style={styles.sheetTitle}>{t('Новый контакт')}</Text>
 
-            {/* Avatar row */}
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: Spacing.md }}>
-              {AVATARS.map(a => (
-                <TouchableOpacity
-                  key={a}
-                  onPress={() => setAvatar(a)}
-                  style={[styles.avaOpt, avatar === a && styles.avaOptSelected]}
-                >
-                  <Text style={{ fontSize: 26 }}>{a}</Text>
-                </TouchableOpacity>
-              ))}
-            </ScrollView>
-
             <TextInput style={styles.input} placeholder={t('Имя')} placeholderTextColor={Colors.textMuted} value={name} onChangeText={setName} maxLength={80} returnKeyType="next" />
             <TextInput style={styles.input} placeholder={t('Номер телефона')} placeholderTextColor={Colors.textMuted} value={phone} onChangeText={setPhone} keyboardType="phone-pad" maxLength={24} returnKeyType="done" />
 
@@ -250,6 +206,7 @@ const styles = StyleSheet.create({
   emptyDesc: { fontSize: 14, color: Colors.textMuted, textAlign: 'center', lineHeight: 20 },
   contactCard: { marginBottom: 12 },
   contactRow: { flexDirection: 'row', alignItems: 'center', padding: Spacing.md, gap: 12 },
+  initial: { fontSize: 20, fontWeight: '700' },
   ava: { width: 52, height: 52, borderRadius: 26, alignItems: 'center', justifyContent: 'center', borderWidth: 1.5 },
   contactName: { fontSize: 16, fontWeight: '700', color: Colors.white },
   contactPhone: { fontSize: 13, color: Colors.textSecondary, marginTop: 2 },
