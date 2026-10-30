@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import {
   View, Text, StyleSheet, ScrollView, TouchableOpacity,
-  Animated, Vibration, Image, Platform, Linking,
+  Animated, Vibration, Image, Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
@@ -19,6 +19,8 @@ import {
 import { Colors, Spacing, Radius } from '../theme';
 import { useLanguage } from '../i18n';
 import { showAlert } from '../lib/dialog';
+import { EMERGENCY_NUMBER, callNumber, openSms, sosMessage } from '../lib/emergency';
+import { Onboarding } from '../components/Onboarding';
 
 const LOGO = require('../../assets/guardaurora-symbol.png');
 
@@ -28,7 +30,7 @@ const HEADER_COLOR = { safe: Colors.lavender, monitoring: '#0F6E7A', alert: Colo
 export default function HomeScreen() {
   const { t, locale } = useLanguage();
   const {
-    status, isMonitoring, sosActive, soundLevel,
+    status, isMonitoring, sosActive, soundLevel, location,
     trustedContacts, threatHistory, toggleMonitoring, activateSOS, deactivateSOS,
   } = useApp();
 
@@ -94,13 +96,23 @@ export default function HomeScreen() {
     toggleMonitoring();
   };
 
-  const callTrustedContact = async () => {
-    const contact = trustedContacts[0];
-    if (!contact) return;
+  const call = async (phone: string) => {
     try {
-      await Linking.openURL(`tel:${contact.phone}`);
+      await callNumber(phone);
     } catch {
       showAlert(t('Звонок недоступен'), t('Не удалось открыть приложение телефона.'));
+    }
+  };
+
+  const messageContacts = async () => {
+    if (trustedContacts.length === 0) {
+      navigation.navigate('Contacts');
+      return;
+    }
+    try {
+      await openSms(trustedContacts.map(contact => contact.phone), sosMessage(t, location));
+    } catch {
+      showAlert(t('SMS недоступны'), t('Не удалось открыть сообщения. Позвоните контакту напрямую.'));
     }
   };
 
@@ -179,7 +191,7 @@ export default function HomeScreen() {
                   </PulseRing>
                 </TouchableOpacity>
                 <Text style={styles.sosNote}>
-                  {sosActive ? t('SOS отмечен в журнале на устройстве') : t('SOS не вызывает службы и не отправляет сообщения')}
+                  {sosActive ? t('Выберите, кому сообщить. Сообщение уйдёт только после вашего подтверждения.') : t('После отсчёта появятся звонок 112 и сообщение близким')}
                 </Text>
 
                 {countdown !== null ? (
@@ -187,14 +199,29 @@ export default function HomeScreen() {
                     <Text style={styles.cancelText}>{t('Отменить запуск')}</Text>
                   </TouchableOpacity>
                 ) : null}
-                {sosActive && trustedContacts[0] ? (
-                  <GradientButton
-                    label={`${t('Позвонить:')} ${trustedContacts[0].name}`}
-                    onPress={callTrustedContact}
-                    colors={Colors.gradMint}
-                    size="md"
-                    style={{ marginTop: Spacing.md, alignSelf: 'stretch' }}
-                  />
+                {sosActive ? (
+                  <View style={styles.sosActions}>
+                    <GradientButton
+                      label={`${t('Позвонить')} ${EMERGENCY_NUMBER}`}
+                      onPress={() => { void call(EMERGENCY_NUMBER); }}
+                      colors={Colors.gradDanger}
+                      size="md"
+                    />
+                    <GradientButton
+                      label={trustedContacts.length > 0 ? t('Написать близким, где я') : t('Добавить контакт для SMS')}
+                      onPress={() => { void messageContacts(); }}
+                      colors={Colors.gradPrimary}
+                      size="md"
+                    />
+                    {trustedContacts[0] ? (
+                      <GradientButton
+                        label={`${t('Позвонить:')} ${trustedContacts[0].name}`}
+                        onPress={() => { void call(trustedContacts[0].phone); }}
+                        colors={Colors.gradMint}
+                        size="md"
+                      />
+                    ) : null}
+                  </View>
                 ) : null}
               </View>
             </GlassCard>
@@ -204,7 +231,7 @@ export default function HomeScreen() {
                 <TouchableOpacity
                   key={contact.id}
                   style={styles.quickItem}
-                  onPress={() => { void Linking.openURL(`tel:${contact.phone}`).catch(() => showAlert(t('Звонок недоступен'), t('Не удалось открыть приложение телефона.'))); }}
+                  onPress={() => { void call(contact.phone); }}
                   accessibilityRole="button"
                   accessibilityLabel={`${t('Позвонить')} ${contact.name}`}
                 >
@@ -232,6 +259,11 @@ export default function HomeScreen() {
               style={styles.primaryAction}
               size="lg"
             />
+            {!isMonitoring ? (
+              <Text style={styles.monitorHint}>
+                {t('Следит за громкими звуками и включает тихий SOS: три встряхивания телефона. Работает, пока приложение открыто.')}
+              </Text>
+            ) : null}
 
             {measuringSound ? (
               <GlassCard style={styles.card}>
@@ -274,6 +306,7 @@ export default function HomeScreen() {
             </GlassCard>
           </ScrollView>
         </Animated.View>
+        <Onboarding onAddContact={() => navigation.navigate('Contacts')} />
       </SafeAreaView>
     </View>
   );
@@ -368,7 +401,9 @@ const styles = StyleSheet.create({
   metricValue: { fontSize: 20, fontWeight: '800', color: Colors.white, marginTop: 8 },
   metricLabel: { fontSize: 12, fontWeight: '700', color: Colors.white },
   metricHint: { fontSize: 11, color: Colors.textMuted },
-  primaryAction: { marginBottom: Spacing.lg },
+  primaryAction: { marginBottom: Spacing.sm },
+  monitorHint: { fontSize: 12, lineHeight: 17, color: Colors.textMuted, textAlign: 'center', marginBottom: Spacing.lg, paddingHorizontal: Spacing.sm },
+  sosActions: { alignSelf: 'stretch', gap: Spacing.sm, marginTop: Spacing.md },
   quickRow: { flexDirection: 'row', gap: 12, marginBottom: Spacing.lg },
   quickItem: { width: 68, alignItems: 'center', gap: 6 },
   quickAvatar: {
