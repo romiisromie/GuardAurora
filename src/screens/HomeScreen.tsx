@@ -110,7 +110,9 @@ export default function HomeScreen() {
       return;
     }
     try {
-      await openSms(trustedContacts.map(contact => contact.phone), sosMessage(t, location));
+      // Only attach coordinates that are recent enough to still be useful.
+      const freshLocation = location && Date.now() - location.timestamp <= 15 * 60 * 1000 ? location : null;
+      await openSms(trustedContacts.map(contact => contact.phone), sosMessage(t, freshLocation));
     } catch {
       showAlert(t('SMS недоступны'), t('Не удалось открыть сообщения. Позвоните контакту напрямую.'));
     }
@@ -261,7 +263,7 @@ export default function HomeScreen() {
             />
             {!isMonitoring ? (
               <Text style={styles.monitorHint}>
-                {t('Следит за громкими звуками и включает тихий SOS: три встряхивания телефона. Работает, пока приложение открыто.')}
+                {t('Показывает уровень звука и включает тихий SOS: три встряхивания телефона. Работает, пока приложение открыто.')}
               </Text>
             ) : null}
 

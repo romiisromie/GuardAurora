@@ -53,11 +53,11 @@
 ```text
 GuardAurora — помощник для личной безопасности: всё важное на одном экране.
 
-• Кнопка SOS с отменяемым трёхсекундным отсчётом отмечает событие в журнале на устройстве.
+• Кнопка SOS с отменяемым трёхсекундным отсчётом. После него — звонок 112 и сообщение близким с вашим местом на карте в одно касание. Событие сохраняется в журнале на устройстве.
 • Тихий SOS: при включённом мониторинге три встряхивания телефона отмечают событие с коротким виброоткликом.
 • Звонок доверенным людям в одно касание прямо с главного экрана.
 • SMS близкому человеку с готовым текстом и ссылкой на ваше местоположение — вы проверяете и отправляете его сами.
-• Координаты по запросу и открытие их в приложении карт.
+• Координаты по запросу, ссылка «где я» для близких и быстрый поиск ближайших полиции, больниц и аптек.
 • ИИ-помощник во вкладке «Помощь» подскажет, что делать в вашей ситуации. Включается только с вашего согласия; без него чат отвечает готовыми офлайн-ответами.
 • Интерфейс на русском, казахском и английском.
 
@@ -91,11 +91,11 @@ Utilities. Перепроверьте категорию по актуальны
 ```text
 GuardAurora is a personal-safety companion that keeps what matters on one screen.
 
-• An SOS button with a cancellable 3-second countdown records the event in your on-device log.
+• An SOS button with a cancellable 3-second countdown, followed by one-tap buttons to call 112 and to text trusted people your location. The event is saved in your on-device log.
 • Silent SOS: with monitoring on, three shakes of the phone record an event with a short haptic confirmation.
 • Call the people you trust with one tap right from the home screen.
 • Text a trusted person a prepared message with a link to your location — you review and send it yourself.
-• Get your coordinates on demand and open them in a maps app.
+• Get your coordinates on demand, share a "where I am" link, and quickly find the nearest police, hospitals and pharmacies.
 • The AI assistant in the Help tab suggests what to do in your situation. It is turned on only with your consent; otherwise the chat uses prepared offline answers.
 • Available in English, Russian and Kazakh.
 
@@ -111,10 +111,10 @@ No account required. Contacts, coordinates and the activity log stay on your dev
 ```text
 GuardAurora has no sign-in or demo account; everything works without registration.
 
-- SOS: tap the red button on the Safety tab; a 3-second countdown can be cancelled. SOS only records an event in the on-device log. It does NOT call emergency services or message anyone.
+- SOS: tap the red button on the Safety tab; a 3-second countdown can be cancelled. SOS records an event in the on-device log and then shows buttons to call 112 and to text trusted contacts. Nothing is called or sent automatically: 112 opens the Phone app, and the SMS opens prefilled in Messages for the user to send.
 - Silent SOS: tap "Start monitoring", then shake the phone firmly three times within about 2 seconds; a haptic tap confirms the event.
 - Microphone: used only while monitoring is on and the app is in the foreground, to show the overall sound level. Audio is not recognized, stored or sent.
-- Location: requested only when the user taps "Update location" on the Map tab; if already granted, starting SOS takes one reading for the local SOS entry. No background tracking.
+- Location: requested only when the user taps "Update location" on the Map tab (the Map tab can then share the location or search nearby police, hospitals and pharmacies in Google Maps); if already granted, starting SOS takes one reading for the local SOS entry. No background tracking.
 - Calls and SMS open the system Phone/Messages apps; the user sends the message.
 - AI assistant (Help tab): optional. It is used only after the user taps "Allow AI" and can be turned off in the Privacy tab. Only the chat text is sent, via our server, to the Groq API; contacts, location and the log are never sent. Without consent the chat uses prepared offline answers. Try: "Someone is following me, what should I do?"
 ```
