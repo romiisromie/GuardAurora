@@ -13,7 +13,7 @@
   <a href="https://apps.apple.com/kz/app/guardaurora/id6828550040"><img alt="App Store" src="https://img.shields.io/badge/App%20Store-GuardAurora-0D96F6?logo=apple&logoColor=white" /></a>
   <a href="https://guard-aurora.vercel.app/"><img alt="Web demo" src="https://img.shields.io/badge/web-guard--aurora.vercel.app-000?logo=vercel" /></a>
   <a href="https://github.com/romiisromie/GuardAurora/releases"><img alt="Release" src="https://img.shields.io/github/v/release/romiisromie/GuardAurora" /></a>
-  <a href="LICENSE"><img alt="License: MIT" src="https://img.shields.io/badge/license-MIT-blue" /></a>
+  <a href="LICENSE"><img alt="License: All rights reserved" src="https://img.shields.io/badge/license-All%20rights%20reserved-lightgrey" /></a>
   <img alt="Expo SDK 54" src="https://img.shields.io/badge/Expo-SDK%2054-000020?logo=expo" />
   <img alt="React Native 0.81" src="https://img.shields.io/badge/React%20Native-0.81-61dafb?logo=react" />
   <img alt="TypeScript" src="https://img.shields.io/badge/TypeScript-5-3178c6?logo=typescript&logoColor=white" />
@@ -157,4 +157,6 @@ npx eas-cli build --platform android --profile production
 
 ## Лицензия
 
-Распространяется по лицензии [MIT](LICENSE). © 2026 Ramina Ibraimova.
+© 2026 Ramina Ibraimova. Все права защищены — подробности в [LICENSE](LICENSE).
+
+Код открыт только для ознакомления: копировать его, публиковать или выпускать на его основе другие приложения без письменного разрешения нельзя. Версии до [v1.1.0](https://github.com/romiisromie/GuardAurora/releases/tag/v1.1.0) включительно вышли под лицензией MIT и остаются под ней.

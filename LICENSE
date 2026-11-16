@@ -1,21 +1,31 @@
-MIT License
+Copyright (c) 2026 Ramina Ibraimova. All rights reserved.
 
-Copyright (c) 2026 Ramina Ibraimova
+This repository and its contents (source code, design, graphics, texts and
+translations) are the property of the copyright holder. The source code is
+published for viewing only.
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+No permission is granted to copy, modify, distribute, sublicense, publish or
+sell this software or any part of it, or to use it to build and release other
+applications, without prior written permission from the copyright holder.
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
+Versions published before 16 November 2026 (up to and including tag v1.1.0,
+commit d361453) were released under the MIT License, and that license still
+applies to those versions.
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+IMPLIED. IN NO EVENT SHALL THE COPYRIGHT HOLDER BE LIABLE FOR ANY CLAIM,
+DAMAGES OR OTHER LIABILITY ARISING FROM THE USE OF THE SOFTWARE.
+
+For permission requests: https://github.com/romiisromie/GuardAurora/issues
+
+---
+
+© 2026 Рамина Ибраимова. Все права защищены.
+
+Исходный код опубликован только для ознакомления. Копировать, изменять,
+распространять, публиковать, продавать его или его части, а также использовать
+их для создания и выпуска других приложений без письменного разрешения
+правообладателя запрещено.
+
+Версии, опубликованные до 16 ноября 2026 года (до тега v1.1.0 и коммита d361453
+включительно), выпущены под лицензией MIT, и для них она продолжает действовать.
