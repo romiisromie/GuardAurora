@@ -2,11 +2,11 @@
   "expo": {
     "name": "GuardAurora",
     "slug": "guardaurora",
-    "version": "1.0.0",
-    "description": "Офлайн-помощник для личной безопасности: локальная отметка SOS, доверенные контакты и координаты по запросу. SOS не вызывает службы и не отправляет сообщения автоматически.",
+    "version": "1.1.0",
+    "description": "Помощник для личной безопасности: SOS со звонком 112 и сообщением близким, сирена, ложный звонок, таймер «Проводи меня» и доверенные контакты. Без регистрации, данные — на устройстве. Звонит и отправляет сообщения только сам пользователь.",
     "orientation": "portrait",
     "icon": "./assets/guardaurora-icon.png",
-    "userInterfaceStyle": "light",
+    "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "splash": {
       "image": "./assets/guardaurora-symbol.png",
@@ -22,7 +22,8 @@
       "infoPlist": {
         "CFBundleAllowMixedLocalizations": true,
         "NSMicrophoneUsageDescription": "GuardAurora использует микрофон для локального измерения уровня звука при включённом мониторинге.",
-        "NSLocationWhenInUseUsageDescription": "GuardAurora определяет координаты только по вашему действию — по кнопке на карте или при запуске SOS, — чтобы показать их, сохранить в журнале на устройстве и при желании открыть в картах."
+        "NSLocationWhenInUseUsageDescription": "GuardAurora определяет координаты только по вашему действию — по кнопке на карте или при запуске SOS, — чтобы показать их, сохранить в журнале на устройстве и при желании открыть в картах.",
+        "NSContactsUsageDescription": "GuardAurora открывает список контактов, только когда вы сами выбираете доверенного человека. Сохраняются лишь имя и номер выбранного контакта — на устройстве."
       }
     },
     "android": {
@@ -36,7 +37,9 @@
         "android.permission.ACCESS_FINE_LOCATION",
         "android.permission.ACCESS_COARSE_LOCATION",
         "android.permission.VIBRATE",
-        "android.permission.MODIFY_AUDIO_SETTINGS"
+        "android.permission.MODIFY_AUDIO_SETTINGS",
+        "android.permission.READ_CONTACTS",
+        "android.permission.POST_NOTIFICATIONS"
       ]
     },
     "web": {
@@ -44,14 +47,26 @@
     },
     "plugins": [
       [
-        "expo-av",
-        { "microphonePermission": "Разрешить GuardAurora использовать микрофон во время включённого мониторинга." }
+        "expo-audio",
+        {
+          "microphonePermission": "Разрешить GuardAurora использовать микрофон во время включённого мониторинга."
+        }
       ],
       [
         "expo-location",
-        { "locationWhenInUsePermission": "Разрешить GuardAurora определять координаты при использовании приложения." }
+        {
+          "locationWhenInUsePermission": "Разрешить GuardAurora определять координаты при использовании приложения."
+        }
       ],
-      "expo-font"
+      "expo-font",
+      [
+        "expo-contacts",
+        {
+          "contactsPermission": "GuardAurora открывает список контактов, только когда вы сами выбираете доверенного человека. Сохраняются лишь имя и номер выбранного контакта — на устройстве."
+        }
+      ],
+      "expo-notifications",
+      "expo-quick-actions"
     ],
     "locales": {
       "ru": "./locales/ru.json",

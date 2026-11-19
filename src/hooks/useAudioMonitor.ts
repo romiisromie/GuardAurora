@@ -1,20 +1,25 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { AppState, Linking, Platform } from 'react-native';
-import { Audio } from 'expo-av';
+import {
+  useAudioRecorder, RecordingPresets, setAudioModeAsync,
+  requestRecordingPermissionsAsync, getRecordingPermissionsAsync, type AudioRecorder,
+} from 'expo-audio';
 import * as FileSystem from 'expo-file-system/legacy';
 import { useApp } from '../store/AppContext';
 import { captureException } from '../lib/monitoring';
 import { useLanguage } from '../i18n';
 import { showAlert } from '../lib/dialog';
 
-async function stopAndDeleteRecording(recording: Audio.Recording) {
-  const uri = recording.getURI();
+const METER_OPTIONS = { ...RecordingPresets.LOW_QUALITY, isMeteringEnabled: true };
+
+async function stopAndDeleteRecording(recorder: AudioRecorder) {
   try {
-    await recording.stopAndUnloadAsync();
+    if (recorder.isRecording) await recorder.stop();
   } catch {
     // The OS may already have stopped the recording during an app-state change.
   }
-  if (uri) {
+  const uri = recorder.uri;
+  if (uri && Platform.OS !== 'web') {
     try {
       await FileSystem.deleteAsync(uri, { idempotent: true });
     } catch (error) {
@@ -29,10 +34,11 @@ export function useAudioMonitor() {
   const tRef = useRef(t);
   tRef.current = t;
   const [hasPermission, setHasPermission] = useState(false);
+  const recorder = useAudioRecorder(METER_OPTIONS);
 
   const requestPermission = useCallback(async () => {
     try {
-      const { granted } = await Audio.requestPermissionsAsync();
+      const { granted } = await requestRecordingPermissionsAsync();
       setHasPermission(granted);
       if (!granted) {
         showAlert(t('Нет доступа к микрофону'), t('Уровень звука измеряться не будет. Тихий SOS работает независимо от микрофона, пока приложение открыто.'), [
@@ -57,19 +63,17 @@ export function useAudioMonitor() {
 
     let cancelled = false;
     let starting = false;
-    let recording: Audio.Recording | null = null;
+    let recording = false;
     let interval: ReturnType<typeof setInterval> | null = null;
-    let reading = false;
 
     const stopRecording = async () => {
       if (interval) clearInterval(interval);
       interval = null;
-      const current = recording;
-      recording = null;
-      if (current) {
-        await stopAndDeleteRecording(current);
+      if (recording) {
+        recording = false;
+        await stopAndDeleteRecording(recorder);
         // Release the iOS record session so other audio is not routed as a call.
-        await Audio.setAudioModeAsync({ allowsRecordingIOS: false }).catch(() => {});
+        await setAudioModeAsync({ allowsRecording: false }).catch(() => {});
       }
       setSoundLevel(0);
     };
@@ -78,34 +82,28 @@ export function useAudioMonitor() {
       if (cancelled || starting || recording || AppState.currentState !== 'active') return;
       starting = true;
       try {
-        const permission = await Audio.getPermissionsAsync();
+        const permission = await getRecordingPermissionsAsync();
         if (!permission.granted) {
           setHasPermission(false);
           return;
         }
         setHasPermission(true);
-        await Audio.setAudioModeAsync({ allowsRecordingIOS: true, playsInSilentModeIOS: true });
-        const result = await Audio.Recording.createAsync({
-          ...Audio.RecordingOptionsPresets.LOW_QUALITY,
-          isMeteringEnabled: true,
-        });
+        await setAudioModeAsync({ allowsRecording: true, playsInSilentMode: true });
+        await recorder.prepareToRecordAsync();
+        recorder.record();
+        recording = true;
         if (cancelled || AppState.currentState !== 'active') {
-          await stopAndDeleteRecording(result.recording);
+          await stopRecording();
           return;
         }
-        recording = result.recording;
-        interval = setInterval(async () => {
-          if (!recording || reading) return;
-          reading = true;
+        interval = setInterval(() => {
           try {
-            const status = await recording.getStatusAsync();
-            if (status.isRecording && status.metering != null) {
-              setSoundLevel(Math.max(0, Math.min(100, Math.round((status.metering + 60) * 1.6))));
+            const { isRecording, metering } = recorder.getStatus();
+            if (isRecording && metering != null) {
+              setSoundLevel(Math.max(0, Math.min(100, Math.round((metering + 60) * 1.6))));
             }
           } catch (error) {
             captureException(error, 'audio-meter');
-          } finally {
-            reading = false;
           }
         }, 400);
       } catch (error) {
@@ -128,7 +126,7 @@ export function useAudioMonitor() {
       appStateSubscription.remove();
       void stopRecording();
     };
-  }, [isMonitoring, sosActive, setSoundLevel]);
+  }, [isMonitoring, sosActive, setSoundLevel, recorder]);
 
   return { hasPermission, requestPermission };
 }

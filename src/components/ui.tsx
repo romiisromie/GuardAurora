@@ -36,8 +36,9 @@ export function GradientButton({ label, onPress, colors = Colors.gradPrimary, st
   loading?: boolean; disabled?: boolean; size?: 'sm' | 'md' | 'lg'; icon?: string;
 }) {
   const height = { sm: 40, md: 48, lg: 54 }[size];
-  const background = disabled ? '#D7DBE0' : colors[0];
+  const background = disabled ? Colors.disabled : colors[0];
   return <TouchableOpacity onPress={onPress} disabled={!!disabled || !!loading} activeOpacity={0.78}
+    accessibilityRole="button" accessibilityLabel={label} accessibilityState={{ disabled: !!disabled, busy: !!loading }}
     style={[styles.button, { minHeight: height, backgroundColor: background }, style]}>
     {loading ? <ActivityIndicator color="#FFFFFF" /> : <>
       {icon ? <Text style={styles.buttonIcon}>{icon}</Text> : null}
@@ -113,12 +114,12 @@ const styles = StyleSheet.create({
   screenSubtitle: { fontSize: 14, color: Colors.textSecondary, marginTop: 5, lineHeight: 20 },
   sectionTitleRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: Spacing.md },
   sectionTitle: { fontSize: 15, fontWeight: '700', color: Colors.white },
-  button: { borderRadius: Radius.md, alignItems: 'center', justifyContent: 'center', flexDirection: 'row', gap: 8, paddingHorizontal: 18 },
+  button: { borderRadius: Radius.md, alignItems: 'center', justifyContent: 'center', flexDirection: 'row', gap: 8, paddingHorizontal: 18, paddingVertical: 10 },
   buttonIcon: { fontSize: 16 },
   buttonLabel: { color: '#FFFFFF', fontSize: 15, fontWeight: '600', textAlign: 'center' },
   badge: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 10, paddingVertical: 7, borderRadius: Radius.full },
   badgeText: { fontSize: 12, fontWeight: '600' },
-  meterTrack: { height: 7, backgroundColor: '#E7E9ED', borderRadius: Radius.full, overflow: 'hidden' },
+  meterTrack: { height: 7, backgroundColor: Colors.track, borderRadius: Radius.full, overflow: 'hidden' },
   meterFill: { height: '100%', borderRadius: Radius.full },
   meterHint: { fontSize: 11, color: Colors.textMuted },
   soundValue: { flexDirection: 'row', alignItems: 'center', gap: 6, alignSelf: 'flex-start', paddingHorizontal: 10, paddingVertical: 7, backgroundColor: Colors.bgCardLight, borderRadius: Radius.md },

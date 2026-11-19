@@ -62,7 +62,7 @@ export default function LegalScreen() {
           <ScreenHeader
             eyebrow={t('Конфиденциальность')}
             title={t('Правовая информация')}
-            subtitle={`${t('Обновлено')} ${new Date(2026, 9, 8).toLocaleDateString(language === 'kk' ? 'kk-KZ' : language === 'en' ? 'en-US' : 'ru-RU', { year: 'numeric', month: 'long' })}`}
+            subtitle={`${t('Обновлено')} ${new Date(2026, 10, 17).toLocaleDateString(language === 'kk' ? 'kk-KZ' : language === 'en' ? 'en-US' : 'ru-RU', { year: 'numeric', month: 'long' })}`}
           />
         </View>
         <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>

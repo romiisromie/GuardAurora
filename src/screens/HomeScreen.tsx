@@ -1,8 +1,9 @@
 import React, { useEffect, useRef, useState } from 'react';
 import {
   View, Text, StyleSheet, ScrollView, TouchableOpacity,
-  Animated, Vibration, Image, Platform,
+  Animated, Vibration, Image, Platform, AccessibilityInfo,
 } from 'react-native';
+import * as QuickActions from 'expo-quick-actions';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
@@ -19,16 +20,19 @@ import {
 import { Colors, Spacing, Radius } from '../theme';
 import { useLanguage } from '../i18n';
 import { showAlert } from '../lib/dialog';
-import { EMERGENCY_NUMBER, callNumber, openSms, sosMessage } from '../lib/emergency';
+import { EMERGENCY_NUMBER, callNumber, openSms, sosMessage, locationForMessage } from '../lib/emergency';
 import { Onboarding } from '../components/Onboarding';
+import { Siren } from '../components/Siren';
+import { FakeCall } from '../components/FakeCall';
+import { EscortTimer } from '../components/EscortTimer';
 
 const LOGO = require('../../assets/guardaurora-symbol.png');
 
-/** Header background per app state: green = ready, teal = monitoring, red = SOS. */
-const HEADER_COLOR = { safe: Colors.lavender, monitoring: '#0F6E7A', alert: Colors.warning, sos: Colors.danger } as const;
+/** Header background per app state: green = ready, teal = monitoring, red = SOS. Same in both themes, under white text. */
+const HEADER_COLOR = { safe: '#168253', monitoring: '#0F6E7A', alert: '#946300', sos: '#B83243' } as const;
 
 export default function HomeScreen() {
-  const { t, locale } = useLanguage();
+  const { t, locale, language } = useLanguage();
   const {
     status, isMonitoring, sosActive, soundLevel, location,
     trustedContacts, threatHistory, toggleMonitoring, activateSOS, deactivateSOS,
@@ -42,6 +46,9 @@ export default function HomeScreen() {
   const measuringSound = isMonitoring && !sosActive;
   const countRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const fadeAnim = useRef(new Animated.Value(0)).current;
+  const [sirenOpen, setSirenOpen] = useState(false);
+  const [fakeCallOpen, setFakeCallOpen] = useState(false);
+  const [escortOpen, setEscortOpen] = useState(false);
 
   useEffect(() => {
     Animated.timing(fadeAnim, { toValue: 1, duration: 500, useNativeDriver: true }).start();
@@ -82,6 +89,7 @@ export default function HomeScreen() {
           Vibration.vibrate([0, 160, 90, 160]);
         }
         activateSOS();
+        AccessibilityInfo.announceForAccessibility(t('SOS включён. Ниже кнопки: позвонить 112 и написать близким.'));
       } else {
         setCountdown(c);
       }
@@ -104,19 +112,40 @@ export default function HomeScreen() {
     }
   };
 
-  const messageContacts = async () => {
+  const messageContacts = async (text?: string) => {
     if (trustedContacts.length === 0) {
       navigation.navigate('Contacts');
       return;
     }
     try {
-      // Only attach coordinates that are recent enough to still be useful.
-      const freshLocation = location && Date.now() - location.timestamp <= 15 * 60 * 1000 ? location : null;
-      await openSms(trustedContacts.map(contact => contact.phone), sosMessage(t, freshLocation));
+      // Only a current or recent position is attached, never a stale one.
+      const where = await locationForMessage(location);
+      await openSms(trustedContacts.map(contact => contact.phone), sosMessage(t, where, text));
     } catch {
       showAlert(t('SMS недоступны'), t('Не удалось открыть сообщения. Позвоните контакту напрямую.'));
     }
   };
+
+  // Long-press on the app icon: SOS, siren, fake call. A no-op where the native module is missing (Expo Go, web).
+  const quickActionRef = useRef<(id: string) => void>(() => {});
+  quickActionRef.current = (id: string) => {
+    navigation.navigate('Home');
+    if (id === 'sos' && !sosActive) handleSOS();
+    else if (id === 'siren') setSirenOpen(true);
+    else if (id === 'fakecall') setFakeCallOpen(true);
+  };
+  useEffect(() => {
+    void QuickActions.setItems([
+      { id: 'sos', title: 'SOS', subtitle: t('Отсчёт 3 секунды'), icon: 'symbol:exclamationmark.triangle.fill' },
+      { id: 'siren', title: t('Сирена'), icon: 'symbol:speaker.wave.3.fill' },
+      { id: 'fakecall', title: t('Ложный звонок'), icon: 'symbol:phone.fill' },
+    ]).catch(() => {});
+  }, [language, t]);
+  useEffect(() => {
+    if (QuickActions.initial) quickActionRef.current(QuickActions.initial.id);
+    const subscription = QuickActions.addListener(action => quickActionRef.current(action.id));
+    return () => subscription.remove();
+  }, []);
 
   const statusCfg = {
     safe: {
@@ -215,6 +244,12 @@ export default function HomeScreen() {
                       colors={Colors.gradPrimary}
                       size="md"
                     />
+                    <GradientButton
+                      label={t('Включить сирену')}
+                      onPress={() => setSirenOpen(true)}
+                      colors={Colors.gradDark}
+                      size="md"
+                    />
                     {trustedContacts[0] ? (
                       <GradientButton
                         label={`${t('Позвонить:')} ${trustedContacts[0].name}`}
@@ -227,6 +262,34 @@ export default function HomeScreen() {
                 ) : null}
               </View>
             </GlassCard>
+
+            <View style={styles.toolsRow}>
+              {([
+                { key: 'siren', icon: 'megaphone', label: t('Сирена'), hint: t('Громкий звук и вспышки экрана'), color: Colors.danger, onPress: () => setSirenOpen(true) },
+                { key: 'fake', icon: 'call', label: t('Ложный звонок'), hint: t('Повод отойти или закончить разговор'), color: Colors.cyan, onPress: () => setFakeCallOpen(true) },
+                { key: 'escort', icon: 'walk', label: t('Проводи меня'), hint: t('Таймер на дорогу домой'), color: Colors.lavender, onPress: () => setEscortOpen(true) },
+              ] as const).map(tool => (
+                <TouchableOpacity
+                  key={tool.key}
+                  style={styles.tool}
+                  onPress={tool.onPress}
+                  accessibilityRole="button"
+                  accessibilityLabel={tool.label}
+                  accessibilityHint={tool.hint}
+                >
+                  <View style={[styles.toolIcon, { backgroundColor: `${tool.color}1F` }]}>
+                    <Ionicons name={tool.icon} size={22} color={tool.color} />
+                  </View>
+                  <Text style={styles.toolLabel} numberOfLines={2}>{tool.label}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+
+            <EscortTimer
+              sheetOpen={escortOpen}
+              onCloseSheet={() => setEscortOpen(false)}
+              onMessageContacts={() => { void messageContacts(t('Мой таймер «Проводи меня» истёк, а отметки «Я на месте» нет. Позвони мне, пожалуйста.')); }}
+            />
 
             <View style={styles.quickRow}>
               {trustedContacts.slice(0, 4).map(contact => (
@@ -308,6 +371,8 @@ export default function HomeScreen() {
             </GlassCard>
           </ScrollView>
         </Animated.View>
+        <FakeCall setupOpen={fakeCallOpen} onCloseSetup={() => setFakeCallOpen(false)} />
+        <Siren visible={sirenOpen} onClose={() => setSirenOpen(false)} />
         <Onboarding onAddContact={() => navigation.navigate('Contacts')} />
       </SafeAreaView>
     </View>
@@ -407,6 +472,13 @@ const styles = StyleSheet.create({
   monitorHint: { fontSize: 12, lineHeight: 17, color: Colors.textMuted, textAlign: 'center', marginBottom: Spacing.lg, paddingHorizontal: Spacing.sm },
   sosActions: { alignSelf: 'stretch', gap: Spacing.sm, marginTop: Spacing.md },
   quickRow: { flexDirection: 'row', gap: 12, marginBottom: Spacing.lg },
+  toolsRow: { flexDirection: 'row', gap: 10, marginBottom: Spacing.lg },
+  tool: {
+    flex: 1, minHeight: 96, backgroundColor: Colors.bgCard, borderRadius: Radius.lg,
+    borderWidth: 1, borderColor: Colors.border, padding: 12, gap: 8, justifyContent: 'space-between',
+  },
+  toolIcon: { width: 40, height: 40, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
+  toolLabel: { fontSize: 13, fontWeight: '700', color: Colors.white, lineHeight: 17 },
   quickItem: { width: 68, alignItems: 'center', gap: 6 },
   quickAvatar: {
     width: 56, height: 56, borderRadius: 28, backgroundColor: Colors.lavenderGlow,

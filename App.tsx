@@ -8,6 +8,7 @@ import Navigation from './src/navigation';
 import { ErrorBoundary } from './src/components/ErrorBoundary';
 import { initMonitoring } from './src/lib/monitoring';
 import { LanguageProvider } from './src/i18n';
+import { Colors, isDark } from './src/theme';
 
 initMonitoring();
 
@@ -18,7 +19,7 @@ export default function App() {
         <GestureHandlerRootView style={{ flex: 1 }}>
           <SafeAreaProvider>
             <AppProvider>
-              <StatusBar style="dark" backgroundColor="#F3F7F4" />
+              <StatusBar style={isDark ? 'light' : 'dark'} backgroundColor={Colors.bg} />
               <Navigation />
             </AppProvider>
           </SafeAreaProvider>

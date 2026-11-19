@@ -83,7 +83,7 @@ function CustomTabBar({ state, navigation }: any) {
                   color={isFocused ? (sosActive && route.name === 'Home' ? Colors.danger : Colors.lavender) : Colors.textMuted}
                 />
               </View>
-              <Text style={[styles.tabLabel, { color: isFocused ? Colors.lavender : Colors.textMuted }]}>
+              <Text maxFontSizeMultiplier={1.4} style={[styles.tabLabel, { color: isFocused ? Colors.lavender : Colors.textMuted }]}>
                 {t(tab.label)}
               </Text>
             </TouchableOpacity>

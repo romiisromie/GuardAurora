@@ -93,7 +93,7 @@ export function Onboarding({ onAddContact }: { onAddContact: () => void }) {
 
 const styles = StyleSheet.create({
   backdrop: {
-    flex: 1, backgroundColor: 'rgba(16,24,19,0.45)',
+    flex: 1, backgroundColor: Colors.overlay,
     justifyContent: 'flex-end', alignItems: 'center',
   },
   sheet: {

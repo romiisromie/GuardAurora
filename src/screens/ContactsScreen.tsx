@@ -5,6 +5,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
+import * as Contacts from 'expo-contacts';
 import { useApp, TrustedContact } from '../store/AppContext';
 import { GlassCard, GradientButton, ScreenHeader, SectionTitle } from '../components/ui';
 import { Colors, Spacing, Radius } from '../theme';
@@ -33,6 +34,27 @@ export default function ContactsScreen() {
   const openModal = () => {
     setName(''); setPhone(''); setRelation('Семья');
     setModalOpen(true);
+  };
+
+  /** System contact picker: the app only receives the one person the user taps, not the address book. */
+  const canPick = Platform.OS !== 'web';
+  const pickFromPhone = async () => {
+    try {
+      const picked = await Contacts.presentContactPickerAsync();
+      if (!picked) return;
+      const numbers = picked.phoneNumbers ?? [];
+      const best = numbers.find(n => /mobile|iphone|моб|ұялы/i.test(n.label ?? '')) ?? numbers[0];
+      if (!best?.number) {
+        showAlert(t('Нет номера'), t('У этого контакта нет номера телефона. Выберите другой или введите номер вручную.'));
+        return;
+      }
+      setName((picked.name ?? '').slice(0, 80));
+      setPhone(best.number);
+      setRelation('Семья');
+      setModalOpen(true);
+    } catch {
+      showAlert(t('Контакты недоступны'), t('Не удалось открыть контакты телефона. Введите имя и номер вручную.'));
+    }
   };
 
   const handleAdd = () => {
@@ -84,7 +106,7 @@ export default function ContactsScreen() {
           <ScreenHeader
             title={t('Доверенные лица')}
             right={
-              <TouchableOpacity style={styles.addBtn} onPress={openModal}>
+              <TouchableOpacity style={styles.addBtn} onPress={openModal} accessibilityRole="button" accessibilityLabel={t('+ Добавить контакт')}>
                 <Ionicons name="add" size={22} color={Colors.white} />
               </TouchableOpacity>
             }
@@ -116,6 +138,7 @@ export default function ContactsScreen() {
                       <View style={{ gap: 8 }}>
                         <TouchableOpacity
                           style={[styles.actionBtn, { backgroundColor: Colors.mintGlow }]}
+                          accessibilityRole="button"
                           accessibilityLabel={`${t('Позвонить')} ${c.name}`}
                           onPress={() => Linking.openURL(`tel:${c.phone}`).catch(() => showAlert(t('Ошибка'), t('Не удалось открыть приложение телефона.')))}
                         >
@@ -123,12 +146,13 @@ export default function ContactsScreen() {
                         </TouchableOpacity>
                         <TouchableOpacity
                           style={[styles.actionBtn, { backgroundColor: Colors.lavenderGlow }]}
+                          accessibilityRole="button"
                           accessibilityLabel={`${t('Написать')} ${c.name}`}
                           onPress={() => textContact(c)}
                         >
                           <Ionicons name="chatbubble-ellipses" size={17} color={Colors.lavender} />
                         </TouchableOpacity>
-                        <TouchableOpacity accessibilityLabel={`${t('Удалить')} ${c.name}`} style={[styles.actionBtn, { backgroundColor: Colors.roseGlow }]} onPress={() => handleRemove(c)}>
+                        <TouchableOpacity accessibilityRole="button" accessibilityLabel={`${t('Удалить')} ${c.name}`} style={[styles.actionBtn, { backgroundColor: Colors.roseGlow }]} onPress={() => handleRemove(c)}>
                           <Ionicons name="trash-outline" size={17} color={Colors.rose} />
                         </TouchableOpacity>
                       </View>
@@ -138,13 +162,18 @@ export default function ContactsScreen() {
               })
             )}
 
-            <GradientButton
-              label={t('+ Добавить контакт')}
-              onPress={openModal}
-              colors={Colors.gradPrimary}
-              size="md"
-              style={{ marginTop: Spacing.md }}
-            />
+            {canPick ? (
+              <GradientButton
+                label={t('Выбрать из контактов телефона')}
+                onPress={() => { void pickFromPhone(); }}
+                colors={Colors.gradPrimary}
+                size="md"
+                style={{ marginTop: Spacing.md }}
+              />
+            ) : null}
+            <TouchableOpacity style={styles.manualBtn} onPress={openModal} accessibilityRole="button">
+              <Text style={styles.manualText}>{canPick ? t('Ввести вручную') : t('+ Добавить контакт')}</Text>
+            </TouchableOpacity>
           </ScrollView>
         </Animated.View>
       </SafeAreaView>
@@ -164,6 +193,8 @@ export default function ContactsScreen() {
               {RELATIONS.map(r => (
                 <TouchableOpacity
                   key={r}
+                  accessibilityRole="radio"
+                  accessibilityState={{ selected: relation === r }}
                   onPress={() => setRelation(r)}
                   style={[styles.relOpt, relation === r && styles.relOptSelected]}
                 >
@@ -173,7 +204,7 @@ export default function ContactsScreen() {
             </ScrollView>
 
             <View style={{ flexDirection: 'row', gap: 12 }}>
-              <TouchableOpacity style={styles.cancelBtn} onPress={() => setModalOpen(false)}>
+              <TouchableOpacity style={styles.cancelBtn} onPress={() => setModalOpen(false)} accessibilityRole="button">
                 <Text style={{ color: Colors.textSecondary, fontWeight: '600', fontSize: 16 }}>{t('Отмена')}</Text>
               </TouchableOpacity>
               <GradientButton label={t('Сохранить')} onPress={handleAdd} colors={Colors.gradPrimary} style={{ flex: 1 }} size="md" />
@@ -212,8 +243,10 @@ const styles = StyleSheet.create({
   contactPhone: { fontSize: 13, color: Colors.textSecondary, marginTop: 2 },
   relTag: { alignSelf: 'flex-start', borderRadius: Radius.full, paddingHorizontal: 10, paddingVertical: 3, marginTop: 5 },
   relText: { fontSize: 11, fontWeight: '600' },
-  actionBtn: { width: 36, height: 36, borderRadius: 18, alignItems: 'center', justifyContent: 'center' },
-  modalWrap: { flex: 1, justifyContent: 'flex-end', backgroundColor: 'rgba(20,24,30,0.35)' },
+  actionBtn: { width: 44, height: 44, borderRadius: 22, alignItems: 'center', justifyContent: 'center' },
+  manualBtn: { minHeight: 48, alignItems: 'center', justifyContent: 'center', marginTop: Spacing.sm },
+  manualText: { fontSize: 15, fontWeight: '700', color: Colors.lavender },
+  modalWrap: { flex: 1, justifyContent: 'flex-end', backgroundColor: Colors.overlay },
   sheet: {
     backgroundColor: Colors.bgElevated, borderTopLeftRadius: Radius.lg, borderTopRightRadius: Radius.lg,
     padding: Spacing.lg, paddingBottom: 40, borderTopWidth: 1, borderColor: Colors.border,
@@ -233,7 +266,7 @@ const styles = StyleSheet.create({
   },
   inputLabel: { fontSize: 12, color: Colors.textMuted, marginBottom: Spacing.sm, fontWeight: '600' },
   relOpt: {
-    paddingHorizontal: 16, paddingVertical: 8, borderRadius: Radius.full,
+    paddingHorizontal: 16, minHeight: 44, justifyContent: 'center', borderRadius: Radius.full,
     backgroundColor: Colors.bgGlass, borderWidth: 1, borderColor: Colors.border, marginRight: 10,
   },
   relOptSelected: { backgroundColor: Colors.lavenderGlow, borderColor: Colors.lavender },
